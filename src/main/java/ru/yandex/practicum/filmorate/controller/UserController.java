@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.ConditionsNotMetException;
@@ -24,7 +25,7 @@ public class UserController {
     }
 
     @PostMapping
-    public User create(@RequestBody final User user) {
+    public User create(@Valid @RequestBody final User user) {
         validation(user);
         log.debug("Валидация при создании пользователя успешно пройдена");
         long nextId = getNextId();
@@ -36,7 +37,7 @@ public class UserController {
     }
 
     @PutMapping
-    public User update(@RequestBody final User newUser) {
+    public User update(@Valid @RequestBody final User newUser) {
         if (newUser.getId() == null) {
             log.debug("В теле запроса не указан Id пользователя");
             throw new ConditionsNotMetException("Id должен быть указан");

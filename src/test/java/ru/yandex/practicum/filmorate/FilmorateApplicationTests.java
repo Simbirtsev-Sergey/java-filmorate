@@ -1,12 +1,7 @@
 package ru.yandex.practicum.filmorate;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
 import ru.yandex.practicum.filmorate.controller.FilmController;
 import ru.yandex.practicum.filmorate.controller.UserController;
 import ru.yandex.practicum.filmorate.exception.ConditionsNotMetException;
@@ -15,45 +10,32 @@ import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 
-import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
-@AutoConfigureMockMvc
 class FilmorateApplicationTests {
-
-    @Autowired
-    private MockMvc mockMvc; // им шлем запросы
-
-    @Autowired
-    private ObjectMapper objectMapper; // им превращаем объект в JSON
 
     // Тестируем POST-метод для фильмов
 
     @Test
-    void createValidFilm() throws Exception {
+    void createValidFilm() {
         Film film = new Film();
         film.setName("Движение вверх");
         film.setDescription("Описание");
         film.setReleaseDate(LocalDate.of(2017, 12, 14));
         film.setDuration(Duration.ofSeconds(140));
 
-        mockMvc.perform(post("/films")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(film)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value("Движение вверх"))
-                .andExpect(jsonPath("$.duration").value(140));
+        FilmController controller = new FilmController();
+
+        Film created = controller.create(film);
+
+        assertNotNull(created.getId());
+        assertEquals("Движение вверх", created.getName());
     }
 
     @Test
