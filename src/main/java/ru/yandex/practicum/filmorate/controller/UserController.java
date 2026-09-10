@@ -70,10 +70,10 @@ public class UserController {
     }
 
     private void validation(final User user) {
-        if (user.getEmail().isBlank() || !user.getEmail().contains("@")) {
+        if (user.getEmail() == null || user.getEmail().isBlank() || !user.getEmail().contains("@")) {
             log.warn("Неправильный ввод email");
             throw new ValidationException("Электронная почта не может быть пустой и должна содержать символ @");
-        } else if (user.getLogin().isBlank()) {
+        } else if (user.getLogin() == null || user.getLogin().isBlank()) {
             log.warn("Неправильный ввод логина");
             throw new ValidationException("Логин не может быть пустым и содержать пробелы");
         } else if (user.getBirthday().isAfter(LocalDate.now())) {
