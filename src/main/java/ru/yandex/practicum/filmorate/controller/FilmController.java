@@ -30,7 +30,7 @@ public class FilmController {
         log.debug("Валидация при создании фильма успешно пройдена");
         long nextId = getNextId();
         film.setId(nextId);
-        log.trace("Id фильма успешно установлен");
+        log.trace("Фильму успешно установлен id = {}", nextId);
         films.put(nextId, film);
         log.info("Фильм успешно добавлен");
         return film;
@@ -58,8 +58,8 @@ public class FilmController {
             log.info("Фильм успешно обновлен");
             return oldFilm;
         }
-        log.debug("Введенный id фильма не был найден");
-        throw new NotFoundException("Фильм с id = " + newFilm.getId() + " не найден");
+        log.debug("Фильм с id {} не был найден", newFilm.getId());
+        throw new NotFoundException(String.format("Фильм с id = " + newFilm.getId() + " не найден"));
     }
 
     private Long getNextId() {

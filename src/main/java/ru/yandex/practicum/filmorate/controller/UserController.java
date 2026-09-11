@@ -30,7 +30,7 @@ public class UserController {
         log.debug("Валидация при создании пользователя успешно пройдена");
         long nextId = getNextId();
         user.setId(nextId);
-        log.trace("Id пользователя успешно установлен");
+        log.trace("Пользователю успешно установлен id = {}", nextId);
         users.put(nextId, user);
         log.info("Пользователь успешно добавлен");
         return user;
@@ -58,8 +58,8 @@ public class UserController {
             log.info("Пользователь успешно обновлен");
             return oldUser;
         }
-        log.debug("Введенный id пользователя не был найден");
-        throw new NotFoundException("Пользователь с id = " + newUser.getId() + " не найден");
+        log.debug("Пользователь с id {} не был найден", newUser.getId());
+        throw new NotFoundException(String.format("Пользователь с id = " + newUser.getId() + " не найден"));
     }
 
     private Long getNextId() {
