@@ -59,11 +59,6 @@ public class UserService {
         log.debug("Проверка на существование пользователя с otherId = {} при удалении друга пройдена успешно",
                 friendId);
 
-        if (!user.getFriends().contains(friendId)) {
-            log.debug("Друг с friendId = {} пользователя с id = {} при удалении не найден", friendId, id);
-            throw new ExcessiveActionException("Друг пользователя с id = " + friendId + " не найден");
-        }
-
         user.getFriends().remove(friendId);
         usersFriend.getFriends().remove(id);
         log.debug("Друг с friendId = {} пользователя с id = {} успешно удален", friendId, id);

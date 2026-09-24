@@ -36,7 +36,7 @@ public class UserController {
         return userService.update(newUser);
     }
 
-    @PostMapping("/{id}/friends/{friendsId}")
+    @PutMapping("/{id}/friends/{friendsId}")
     public void addFriend(@Positive @PathVariable final Long id, @Positive @PathVariable final Long friendsId) {
         userService.addFriend(id, friendsId);
     }

@@ -41,7 +41,7 @@ public class FilmController {
         return filmService.getFilmOrThrow(id);
     }
 
-    @PostMapping("/{id}/like/{userId}")
+    @PutMapping("/{id}/like/{userId}")
     public void userLikesMovie(@PathVariable final Long id, @PathVariable final Long userId) {
         filmService.addLike(id, userId);
     }
