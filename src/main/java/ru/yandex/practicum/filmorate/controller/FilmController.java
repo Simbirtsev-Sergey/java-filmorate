@@ -15,6 +15,7 @@ import java.util.Collection;
 @Slf4j
 public class FilmController {
     private final FilmService filmService;
+    private final String uri = "/{id}/like/{userId}";
 
     @Autowired
     public FilmController(final FilmService filmService) {
@@ -41,12 +42,12 @@ public class FilmController {
         return filmService.getFilmOrThrow(id);
     }
 
-    @PutMapping("/{id}/like/{userId}")
+    @PutMapping(uri)
     public void userLikesMovie(@PathVariable final Long id, @PathVariable final Long userId) {
         filmService.addLike(id, userId);
     }
 
-    @DeleteMapping("/{id}/like/{userId}")
+    @DeleteMapping(uri)
     public void userDeleteLikesMovie(@PathVariable final Long id, @PathVariable final Long userId) {
         filmService.deleteLike(id, userId);
     }

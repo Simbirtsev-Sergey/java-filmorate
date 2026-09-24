@@ -15,6 +15,7 @@ import java.util.Collection;
 @Slf4j
 public class UserController {
     private final UserService userService;
+    private final String uri = "/{id}/friends/{friendsId}";
 
     @Autowired
     public UserController(final UserService userService) {
@@ -36,12 +37,12 @@ public class UserController {
         return userService.update(newUser);
     }
 
-    @PutMapping("/{id}/friends/{friendsId}")
+    @PutMapping(uri)
     public void addFriend(@Positive @PathVariable final Long id, @Positive @PathVariable final Long friendsId) {
         userService.addFriend(id, friendsId);
     }
 
-    @DeleteMapping("/{id}/friends/{friendsId}")
+    @DeleteMapping(uri)
     public void deleteFriend(@Positive @PathVariable final Long id, @Positive @PathVariable final Long friendsId) {
         userService.deleteFriend(id, friendsId);
     }
