@@ -9,6 +9,12 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
+import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.time.Duration;
 import java.time.LocalDate;
@@ -30,53 +36,84 @@ class FilmorateApplicationTests {
         film.setReleaseDate(LocalDate.of(2017, 12, 14));
         film.setDuration(Duration.ofSeconds(140));
 
-        FilmController controller = new FilmController();
+        UserStorage userStorage = new InMemoryUserStorage();
 
-        Film created = controller.create(film);
+        FilmStorage filmStorage = new InMemoryFilmStorage();
+        Film created = filmStorage.create(film);
+
+        FilmService filmService = new FilmService(filmStorage, userStorage);
+
+        FilmController controller = new FilmController(filmService);
 
         assertNotNull(created.getId());
-        assertEquals("Движение вверх", created.getName());
+        assertTrue(controller.getFilms().contains(created));
     }
 
     @Test
     void createFilmWithEmptyName() {
-        FilmController controller = new FilmController();
         Film film = new Film();
         film.setName("");
+
+        UserStorage userStorage = new InMemoryUserStorage();
+
+        FilmStorage filmStorage = new InMemoryFilmStorage();
+
+        FilmService filmService = new FilmService(filmStorage, userStorage);
+
+        FilmController controller = new FilmController(filmService);
 
         assertThrows(ValidationException.class, () -> controller.create(film));
     }
 
     @Test
     void createFilmWithLongDescription() {
-        FilmController controller = new FilmController();
         Film film = new Film();
         film.setName("Движение вверх");
         film.setDescription("F".repeat(201));
 
+        UserStorage userStorage = new InMemoryUserStorage();
+
+        FilmStorage filmStorage = new InMemoryFilmStorage();
+
+        FilmService filmService = new FilmService(filmStorage, userStorage);
+
+        FilmController controller = new FilmController(filmService);
         assertThrows(ValidationException.class, () -> controller.create(film));
     }
 
     @Test
     void createFilmWithEarlyReleaseDate() {
-        FilmController controller = new FilmController();
         Film film = new Film();
         film.setName("Движение вверх");
         film.setDescription("О победе на последних трёх секундах");
         film.setReleaseDate(LocalDate.of(1895, 12, 27));
+
+        UserStorage userStorage = new InMemoryUserStorage();
+
+        FilmStorage filmStorage = new InMemoryFilmStorage();
+
+        FilmService filmService = new FilmService(filmStorage, userStorage);
+
+        FilmController controller = new FilmController(filmService);
 
         assertThrows(ValidationException.class, () -> controller.create(film));
     }
 
     @Test
     void createFilmWithNegativeDuration() {
-        FilmController controller = new FilmController();
         Film film = new Film();
-
         film.setName("Движение вверх");
         film.setDescription("О победе на последних трёх секундах");
         film.setReleaseDate(LocalDate.of(1895, 12, 29));
         film.setDuration(Duration.ofSeconds(-50));
+
+        UserStorage userStorage = new InMemoryUserStorage();
+
+        FilmStorage filmStorage = new InMemoryFilmStorage();
+
+        FilmService filmService = new FilmService(filmStorage, userStorage);
+
+        FilmController controller = new FilmController(filmService);
 
         assertThrows(ValidationException.class, () -> controller.create(film));
     }
@@ -85,8 +122,6 @@ class FilmorateApplicationTests {
 
     @Test
     void getFilmsReturnsCreatedFilm() {
-        FilmController controller = new FilmController();
-
         Film film1 = new Film();
         Film film2 = new Film();
 
@@ -99,6 +134,14 @@ class FilmorateApplicationTests {
         film2.setDescription("Замес года");
         film2.setReleaseDate(LocalDate.of(2026, 1, 29));
         film2.setDuration(Duration.ofSeconds(100));
+
+        UserStorage userStorage = new InMemoryUserStorage();
+
+        FilmStorage filmStorage = new InMemoryFilmStorage();
+
+        FilmService filmService = new FilmService(filmStorage, userStorage);
+
+        FilmController controller = new FilmController(filmService);
 
         controller.create(film1);
         controller.create(film2);
@@ -114,7 +157,14 @@ class FilmorateApplicationTests {
 
     @Test
     void getFilmsReturnsNoCreatedFilm() {
-        FilmController controller = new FilmController();
+        UserStorage userStorage = new InMemoryUserStorage();
+
+        FilmStorage filmStorage = new InMemoryFilmStorage();
+
+        FilmService filmService = new FilmService(filmStorage, userStorage);
+
+        FilmController controller = new FilmController(filmService);
+
         Collection<Film> collection = controller.getFilms();
 
         assertTrue(collection.isEmpty());
@@ -124,13 +174,20 @@ class FilmorateApplicationTests {
 
     @Test
     void updateFilm() {
-        FilmController controller = new FilmController();
         Film film = new Film();
 
         film.setName("Движение вверх");
         film.setDescription("О победе на последних трёх секундах");
         film.setReleaseDate(LocalDate.of(1895, 12, 29));
         film.setDuration(Duration.ofSeconds(50));
+
+        UserStorage userStorage = new InMemoryUserStorage();
+
+        FilmStorage filmStorage = new InMemoryFilmStorage();
+
+        FilmService filmService = new FilmService(filmStorage, userStorage);
+
+        FilmController controller = new FilmController(filmService);
 
         controller.create(film);
 
@@ -151,13 +208,20 @@ class FilmorateApplicationTests {
 
     @Test
     void updateFilmWithUnknownIdFails() {
-        FilmController controller = new FilmController();
         Film film = new Film();
 
         film.setName("Движение вверх");
         film.setDescription("О победе на последних трёх секундах");
         film.setReleaseDate(LocalDate.of(1895, 12, 29));
         film.setDuration(Duration.ofSeconds(50));
+
+        UserStorage userStorage = new InMemoryUserStorage();
+
+        FilmStorage filmStorage = new InMemoryFilmStorage();
+
+        FilmService filmService = new FilmService(filmStorage, userStorage);
+
+        FilmController controller = new FilmController(filmService);
 
         controller.create(film);
 
@@ -170,13 +234,20 @@ class FilmorateApplicationTests {
 
     @Test
     void updateFilmWithIncorrectId() {
-        FilmController controller = new FilmController();
         Film film = new Film();
 
         film.setName("Движение вверх");
         film.setDescription("О победе на последних трёх секундах");
         film.setReleaseDate(LocalDate.of(1895, 12, 29));
         film.setDuration(Duration.ofSeconds(50));
+
+        UserStorage userStorage = new InMemoryUserStorage();
+
+        FilmStorage filmStorage = new InMemoryFilmStorage();
+
+        FilmService filmService = new FilmService(filmStorage, userStorage);
+
+        FilmController controller = new FilmController(filmService);
 
         controller.create(film);
 
@@ -198,7 +269,11 @@ class FilmorateApplicationTests {
         user.setName("Sergey");
         user.setBirthday(LocalDate.of(2005, 11, 5));
 
-        UserController controller = new UserController();
+        UserStorage userStorage = new InMemoryUserStorage();
+
+        UserService userService = new UserService(userStorage);
+
+        UserController controller = new UserController(userService);
 
         User created = controller.create(user);
 
@@ -214,7 +289,11 @@ class FilmorateApplicationTests {
         user.setName("Sergey");
         user.setBirthday(LocalDate.of(2005, 11, 5));
 
-        UserController controller = new UserController();
+        UserStorage userStorage = new InMemoryUserStorage();
+
+        UserService userService = new UserService(userStorage);
+
+        UserController controller = new UserController(userService);
 
         assertThrows(ValidationException.class, () -> controller.create(user));
     }
@@ -228,7 +307,11 @@ class FilmorateApplicationTests {
         user.setName("Sergey");
         user.setBirthday(LocalDate.of(2005, 11, 5));
 
-        UserController controller = new UserController();
+        UserStorage userStorage = new InMemoryUserStorage();
+
+        UserService userService = new UserService(userStorage);
+
+        UserController controller = new UserController(userService);
 
         assertThrows(ValidationException.class, () -> controller.create(user));
     }
@@ -241,7 +324,11 @@ class FilmorateApplicationTests {
         user.setName("Sergey");
         user.setBirthday(LocalDate.of(2005, 11, 5));
 
-        UserController controller = new UserController();
+        UserStorage userStorage = new InMemoryUserStorage();
+
+        UserService userService = new UserService(userStorage);
+
+        UserController controller = new UserController(userService);
 
         assertThrows(ValidationException.class, () -> controller.create(user));
     }
@@ -254,7 +341,11 @@ class FilmorateApplicationTests {
         user.setName("Sergey");
         user.setBirthday(LocalDate.of(2035, 11, 5));
 
-        UserController controller = new UserController();
+        UserStorage userStorage = new InMemoryUserStorage();
+
+        UserService userService = new UserService(userStorage);
+
+        UserController controller = new UserController(userService);
 
         assertThrows(ValidationException.class, () -> controller.create(user));
     }
@@ -267,7 +358,12 @@ class FilmorateApplicationTests {
         user.setLogin("sting");
         user.setBirthday(LocalDate.of(2015, 11, 5));
 
-        UserController controller = new UserController();
+        UserStorage userStorage = new InMemoryUserStorage();
+
+        UserService userService = new UserService(userStorage);
+
+        UserController controller = new UserController(userService);
+
         controller.create(user);
 
         assertEquals(user.getName(), user.getLogin());
@@ -276,8 +372,6 @@ class FilmorateApplicationTests {
     // Тестируем GET-метод для пользователей
     @Test
     void getUsersReturnsCreatedUser() {
-        UserController controller = new UserController();
-
         User user1 = new User();
         User user2 = new User();
 
@@ -290,6 +384,12 @@ class FilmorateApplicationTests {
         user2.setLogin("Dra");
         user2.setName("Ivan");
         user2.setBirthday(LocalDate.of(2015, 1, 18));
+
+        UserStorage userStorage = new InMemoryUserStorage();
+
+        UserService userService = new UserService(userStorage);
+
+        UserController controller = new UserController(userService);
 
         controller.create(user1);
         controller.create(user2);
@@ -305,7 +405,12 @@ class FilmorateApplicationTests {
 
     @Test
     void getUsersReturnsNoCreatedUser() {
-        UserController controller = new UserController();
+        UserStorage userStorage = new InMemoryUserStorage();
+
+        UserService userService = new UserService(userStorage);
+
+        UserController controller = new UserController(userService);
+
         Collection<User> collection = controller.getUsers();
 
         assertTrue(collection.isEmpty());
@@ -315,13 +420,18 @@ class FilmorateApplicationTests {
 
     @Test
     void updateUser() {
-        UserController controller = new UserController();
         User user = new User();
 
         user.setEmail("SergeySi@mail.ru");
         user.setLogin("sting");
         user.setName("Sergey");
         user.setBirthday(LocalDate.of(2005, 11, 5));
+
+        UserStorage userStorage = new InMemoryUserStorage();
+
+        UserService userService = new UserService(userStorage);
+
+        UserController controller = new UserController(userService);
 
         controller.create(user);
 
@@ -342,13 +452,18 @@ class FilmorateApplicationTests {
 
     @Test
     void updateUserWithUnknownIdFails() {
-        UserController controller = new UserController();
         User user = new User();
 
         user.setEmail("SergeySi@mail.ru");
         user.setLogin("sting");
         user.setName("Sergey");
         user.setBirthday(LocalDate.of(2005, 11, 5));
+
+        UserStorage userStorage = new InMemoryUserStorage();
+
+        UserService userService = new UserService(userStorage);
+
+        UserController controller = new UserController(userService);
 
         controller.create(user);
 
@@ -361,13 +476,18 @@ class FilmorateApplicationTests {
 
     @Test
     void updateUserWithIncorrectId() {
-        UserController controller = new UserController();
         User user = new User();
 
         user.setEmail("SergeySi@mail.ru");
         user.setLogin("sting");
         user.setName("Sergey");
         user.setBirthday(LocalDate.of(2005, 11, 5));
+
+        UserStorage userStorage = new InMemoryUserStorage();
+
+        UserService userService = new UserService(userStorage);
+
+        UserController controller = new UserController(userService);
 
         controller.create(user);
 
