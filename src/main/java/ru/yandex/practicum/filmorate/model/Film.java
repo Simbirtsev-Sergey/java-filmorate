@@ -3,6 +3,8 @@ package ru.yandex.practicum.filmorate.model;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import lombok.Data;
+import ru.yandex.practicum.filmorate.enums.Genre;
+import ru.yandex.practicum.filmorate.enums.Rating;
 import ru.yandex.practicum.filmorate.serializer.DurationSerializer;
 
 import java.time.Duration;
@@ -18,5 +20,7 @@ public class Film {
     private LocalDate releaseDate;
     @JsonSerialize(using = DurationSerializer.class)
     private Duration duration;
-    private Set<Long> likes = new HashSet<>();
+    private Genre genre;
+    private Rating rating;
+    private final Set<Long> likes = new HashSet<>();
 }
