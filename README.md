@@ -13,12 +13,12 @@ Template repository for Filmorate project.
 `FROM Film`
 
 Получение всех пользователей
-SELECT *
-FROM User
+`SELECT *`    
+`FROM User`  
 
 Топ N наиболее популярных фильмов
-SELECT Film.name
-FROM Film 
-LEFT JOIN Rating ON Film.ratingID = Rating.ratingID
-ORDER BY Rating.ratingID
-LIMIT N
+`SELECT Film.name`    
+`FROM Film`    
+`LEFT JOIN Rating ON Film.ratingID = Rating.ratingID`    
+`ORDER BY Rating.ratingID`     
+`LIMIT N`
