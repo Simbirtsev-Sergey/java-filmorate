@@ -9,7 +9,7 @@ Template repository for Filmorate project.
 ## Примеры запросов для основных операций
 
 ### Получение всех фильмов
-`SELECT *
+`SELECT * \
 FROM Film`
 
 Получение всех пользователей
