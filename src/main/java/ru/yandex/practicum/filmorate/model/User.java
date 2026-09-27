@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.model;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
+import ru.yandex.practicum.filmorate.enums.Application;
 
 import java.time.LocalDate;
 import java.util.HashSet;
@@ -17,5 +18,6 @@ public class User {
     private String login;
     private String name;
     private LocalDate birthday;
-    private Set<Long> friends = new HashSet<>();
+    private Application application;
+    private final Set<Long> friends = new HashSet<>();
 }
