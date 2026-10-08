@@ -1,13 +1,11 @@
-package ru.yandex.practicum.filmorate.storage;
+package ru.yandex.practicum.filmorate.storage.user;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.ConditionsNotMetException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
-import java.time.LocalDate;
 import java.util.*;
 
 @Slf4j
@@ -22,7 +20,7 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public User create(final User user) {
-        validation(user);
+        validationName(user);
         log.debug("Валидация при создании пользователя успешно пройдена");
         long nextId = getNextId();
         user.setId(nextId);
@@ -41,7 +39,7 @@ public class InMemoryUserStorage implements UserStorage {
         if (users.containsKey(newUser.getId())) {
             User oldUser = users.get(newUser.getId());
             log.trace("В теле запроса был указан корректный Id пользователя");
-            validation(newUser);
+            validationName(newUser);
             log.debug("Валидация при обновлении пользователя успешно пройдена");
             oldUser.setEmail(newUser.getEmail());
             log.trace("Email успешно установлен");
@@ -66,17 +64,7 @@ public class InMemoryUserStorage implements UserStorage {
                 .orElse(0) + 1;
     }
 
-    private void validation(final User user) {
-        if (user.getEmail() == null || user.getEmail().isBlank() || !user.getEmail().contains("@")) {
-            log.warn("Неправильный ввод email");
-            throw new ValidationException("Электронная почта не может быть пустой и должна содержать символ @");
-        } else if (user.getLogin() == null || user.getLogin().isBlank()) {
-            log.warn("Неправильный ввод логина");
-            throw new ValidationException("Логин не может быть пустым и содержать пробелы");
-        } else if (user.getBirthday().isAfter(LocalDate.now())) {
-            log.warn("Неправильный ввод даты рождения");
-            throw new ValidationException("Дата рождения не может быть в будущем");
-        }
+    private void validationName(final User user) {
         if (user.getName() == null) {
             user.setName(user.getLogin());
         }
@@ -84,5 +72,26 @@ public class InMemoryUserStorage implements UserStorage {
 
     public Optional<User> getUserById(final Long userId) {
         return Optional.ofNullable(users.get(userId));
+    }
+
+    @Override
+    public void addFriend(final Long id, final Long friendId) {
+
+    }
+
+    @Override
+    public void deleteFriend(final Long id, final Long friendId) {
+
+    }
+
+    @Override
+    public boolean hasFriendAdded(final Long id, final Long friendId) {
+        return false;
+    }
+
+
+    @Override
+    public List<User> findFriends(final Long id) {
+        return List.of();
     }
 }

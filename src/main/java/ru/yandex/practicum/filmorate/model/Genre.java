@@ -1,14 +1,12 @@
 package ru.yandex.practicum.filmorate.model;
 
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.experimental.FieldDefaults;
 
 @Data
-@AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class ErrorResponse {
-    final String error;
-    final String description;
+public class Genre {
+    Long id;
+    String name;
 }
