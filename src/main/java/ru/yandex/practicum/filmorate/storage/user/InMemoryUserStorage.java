@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.storage;
+package ru.yandex.practicum.filmorate.storage.user;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -72,5 +72,26 @@ public class InMemoryUserStorage implements UserStorage {
 
     public Optional<User> getUserById(final Long userId) {
         return Optional.ofNullable(users.get(userId));
+    }
+
+    @Override
+    public void addFriend(final Long id, final Long friendId) {
+
+    }
+
+    @Override
+    public void deleteFriend(final Long id, final Long friendId) {
+
+    }
+
+    @Override
+    public boolean hasFriendAdded(final Long id, final Long friendId) {
+        return false;
+    }
+
+
+    @Override
+    public List<User> findFriends(final Long id) {
+        return List.of();
     }
 }
