@@ -5,7 +5,9 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import lombok.AccessLevel;
 import lombok.Data;
+import lombok.experimental.FieldDefaults;
 import ru.yandex.practicum.filmorate.deserializer.DurationDeserializer;
 import ru.yandex.practicum.filmorate.dto.genre.GenreDto;
 import ru.yandex.practicum.filmorate.dto.rating.RatingDto;
@@ -16,23 +18,24 @@ import java.time.LocalDate;
 import java.util.Set;
 
 @Data
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class UpdateFilmRequest {
-    private Long id;
+    Long id;
     @NotBlank(message = "Название не должно быть пустым")
-    private String name;
+    String name;
     @Size(
             max = 200,
             message = "Максимальная длина описания — 200 символов"
     )
-    private String description;
+    String description;
     @NotNull(message = "Дата релиза обязательна")
-    private LocalDate releaseDate;
+    LocalDate releaseDate;
     @JsonDeserialize(using = DurationDeserializer.class)
     @JsonSerialize(using = DurationSerializer.class)
     @NotNull
-    private Duration duration;
-    private RatingDto mpa;
-    private Set<GenreDto> genres;
+    Duration duration;
+    RatingDto mpa;
+    Set<GenreDto> genres;
 
     public boolean hasName() {
         return !(name == null || name.isBlank());
