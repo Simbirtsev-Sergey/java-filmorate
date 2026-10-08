@@ -23,8 +23,6 @@ import java.util.Set;
 @Repository
 @Primary
 public class FilmDbStorage extends BaseStorage<Film> implements FilmStorage {
-    // Название рейтинга подтягивается сразу вместе с фильмом; FilmRowMapper читает его из колонки rating_name,
-    // поэтому она должна быть во всех запросах, которые читают фильмы
     private static final String SELECT_FILMS = "SELECT f.*, r.name AS rating_name FROM Films f " +
             "LEFT JOIN Ratings r ON f.rating_id = r.rating_id ";
     private static final String FIND_ALL_QUERY = SELECT_FILMS + "ORDER BY f.film_id";
