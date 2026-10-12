@@ -1,26 +1,24 @@
 package ru.yandex.practicum.filmorate.model;
 
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-
+import lombok.AccessLevel;
 import lombok.Data;
-import ru.yandex.practicum.filmorate.enums.Genre;
-import ru.yandex.practicum.filmorate.enums.Rating;
-import ru.yandex.practicum.filmorate.serializer.DurationSerializer;
+import lombok.experimental.FieldDefaults;
+import ru.yandex.practicum.filmorate.dto.genre.GenreDto;
+import ru.yandex.practicum.filmorate.dto.rating.RatingDto;
 
 import java.time.Duration;
 import java.time.LocalDate;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 @Data
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Film {
-    private Long id;
-    private String name;
-    private String description;
-    private LocalDate releaseDate;
-    @JsonSerialize(using = DurationSerializer.class)
-    private Duration duration;
-    private Genre genre;
-    private Rating rating;
-    private final Set<Long> likes = new HashSet<>();
+    Long id;
+    String name;
+    String description;
+    LocalDate releaseDate;
+    Duration duration;
+    RatingDto mpa;
+    Set<GenreDto> genres = new LinkedHashSet<>();
 }

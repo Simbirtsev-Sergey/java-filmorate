@@ -2,12 +2,14 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.ExcessiveActionException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
+import ru.yandex.practicum.filmorate.storage.user.UserDbStorage;
+import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -15,91 +17,113 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class UserService {
-    private final UserStorage userStorage;
+    private final UserStorage userDbStorage;
 
     @Autowired
+    public UserService(final UserDbStorage userDbStorage) {
+        this.userDbStorage = userDbStorage;
+    }
+
+    public UserService(final InMemoryUserStorage userStorage) {
+        this.userDbStorage = userStorage;
+    }
+
     public UserService(final UserStorage userStorage) {
-        this.userStorage = userStorage;
+        this.userDbStorage = userStorage;
     }
 
     public Collection<User> getUsers() {
-        return userStorage.getUsers();
+        return userDbStorage.getUsers();
     }
 
     public User create(final User user) {
-        return userStorage.create(user);
+        validationName(user);
+        return userDbStorage.create(user);
     }
 
     public User update(final User newUser) {
-        return userStorage.update(newUser);
+        validationName(newUser);
+        return userDbStorage.update(newUser);
     }
 
     // Добавление в друзья
     public void addFriend(final Long id, final Long friendId) {
-        final User user = getUserOrThrow(id);
+        if (id.equals(friendId)) {
+            throw new ValidationException("Id не должны совпадать");
+        }
+        checkingUser(id);
         log.debug("Проверка на существование пользователя с id = {} при добавлении друга пройдена успешно", id);
-        final User usersFriend = getUserOrThrow(friendId);
+        checkingUser(friendId);
         log.debug("Проверка на существование пользователя с otherId = {} при добавлении друга пройдена успешно",
                 friendId);
 
-        if (user.getFriends().contains(friendId)) {
-            log.debug("Друг с friendId = {} пользователя с id = {} при добавлении не найден", friendId, id);
+        if (userDbStorage.hasFriendAdded(id, friendId)) {
+            log.debug("Друг с friendId = {} пользователя с id = {} уже добавлен", friendId, id);
             throw new ExcessiveActionException("Пользователь с id = " + friendId + " уже добавлен в друзья");
         }
-        user.getFriends().add(friendId);
-        usersFriend.getFriends().add(id);
+        userDbStorage.addFriend(id, friendId);
         log.debug("Друг с friendId = {} пользователя с id = {} успешно добавлен", friendId, id);
     }
 
     // Удаление из друзей
     public void deleteFriend(final Long id, final Long friendId) {
-        final User user = getUserOrThrow(id);
+        checkingUser(id);
         log.debug("Проверка на существование пользователя с id = {} при удалении друга пройдена успешно", id);
-        final User usersFriend = getUserOrThrow(friendId);
+        checkingUser(friendId);
         log.debug("Проверка на существование пользователя с otherId = {} при удалении друга пройдена успешно",
                 friendId);
 
-        user.getFriends().remove(friendId);
-        usersFriend.getFriends().remove(id);
+        userDbStorage.deleteFriend(id, friendId);
         log.debug("Друг с friendId = {} пользователя с id = {} успешно удален", friendId, id);
     }
 
     // Вывод друзей пользователя
     public Collection<User> usersFriends(final Long id) {
-        final User user = getUserOrThrow(id);
+        checkingUser(id);
         log.debug("Проверка на существование пользователя с id = {} при выводе друзей пройдена успешно", id);
-
-        return getUsers().stream()
-                .filter(us -> user.getFriends().contains(us.getId()))
-                .toList();
+        return userDbStorage.findFriends(id);
     }
 
     // Вывод общих друзей
     public Collection<User> mutualFriends(final Long id, final Long otherId) {
-        final User user = getUserOrThrow(id);
+        checkingUser(id);
         log.debug("Проверка на существование пользователя с id = {} при поиске общих друзей пройдена успешно", id);
-        final User usersFriend = getUserOrThrow(otherId);
+        checkingUser(otherId);
         log.debug("Проверка на существование пользователя с otherId = {} при поиске общих друзей пройдена успешно",
                 otherId);
 
-        Set<Long> commonFriends = findCommonFriends(user.getFriends(), usersFriend.getFriends());
+        List<User> friendsUsers = userDbStorage.findFriends(id);
 
-        return user.getFriends()
-                .stream()
+        List<Long> commonFriends = findCommonFriends(friendsUsers, userDbStorage.findFriends(otherId));
+
+        return friendsUsers.stream()
+                .map(User::getId)
                 .filter(commonFriends::contains)
-                .map(this::getUserOrThrow)
+                .map((idUser) -> userDbStorage.getUserById(idUser).orElseThrow())
                 .toList();
     }
 
-    @NonNull
-    private User getUserOrThrow(final Long id) {
-        return userStorage.getUserById(id).orElseThrow(() ->
-                new NotFoundException("Пользователя с id = " + id + " не существует"));
+    private void checkingUser(final Long id) {
+        if (userDbStorage.getUserById(id).isEmpty()) {
+            throw new NotFoundException("Пользователя с id = " + id + " не существует");
+        }
     }
 
-    private Set<Long> findCommonFriends(Set<Long> set1, Set<Long> set2) {
-        return set1.stream()
-                .filter(set2::contains)
-                .collect(Collectors.toSet());
+    private List<Long> findCommonFriends(List<User> list1, List<User> list2) {
+        List<Long> q1 = list1.stream()
+                .map(User::getId)
+                .toList();
+        List<Long> q2 = list2.stream()
+                .map(User::getId)
+                .toList();
+
+
+        return q1.stream().filter(q2::contains).collect(Collectors.toList());
+    }
+
+    private void validationName(final User user) {
+        if (user.getName() == null || user.getName().isBlank()) {
+            user.setName(user.getLogin());
+        }
     }
 }
