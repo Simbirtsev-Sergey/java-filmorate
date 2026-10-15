@@ -11,6 +11,7 @@ import ru.yandex.practicum.filmorate.dto.film.UpdateFilmRequest;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import java.util.Collection;
+import java.util.List;
 
 @RestController
 @RequestMapping("/films")
@@ -57,5 +58,10 @@ public class FilmController {
     @GetMapping("/popular")
     public Collection<FilmDto> mostPopularFilms(@Positive @RequestParam(defaultValue = "10") int count) {
         return filmService.topFilmsByLikes(count);
+    }
+
+    @GetMapping("/search")
+    public Collection<FilmDto> searchByDirectorAndName(@RequestParam String query, @RequestParam List<String> by) {
+        return filmService.searchByDirectorAndName(query, by);
     }
 }

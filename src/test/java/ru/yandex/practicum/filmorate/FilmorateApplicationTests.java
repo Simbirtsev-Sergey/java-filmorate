@@ -326,6 +326,30 @@ class FilmorateApplicationTests {
         assertThat(filmStorage.topFilmsByLikes(1)).hasSize(1);
     }
 
+    @Test
+    public void testTopFilmsByLikes() {
+        User user1 = userStorage.create(newUser("user1"));
+        User user2 = userStorage.create(newUser("user2"));
+        User user3 = userStorage.create(newUser("user3"));
+        Film oneLike = filmStorage.create(newFilm("Один лайк", 1L));
+        Film threeLikes = filmStorage.create(newFilm("Три лайка", 1L));
+        Film twoLikes = filmStorage.create(newFilm("Два лайка", 1L));
+        Film noLikes = filmStorage.create(newFilm("Без лайков", 1L));
+
+        filmStorage.insertLike(oneLike.getId(), user1.getId());
+        filmStorage.insertLike(threeLikes.getId(), user1.getId());
+        filmStorage.insertLike(threeLikes.getId(), user2.getId());
+        filmStorage.insertLike(threeLikes.getId(), user3.getId());
+        filmStorage.insertLike(twoLikes.getId(), user1.getId());
+        filmStorage.insertLike(twoLikes.getId(), user2.getId());
+
+        assertThat(filmStorage.topFilmsByLikes(10))
+                .extracting(Film::getId)
+                .containsSubsequence(threeLikes.getId(), twoLikes.getId(), oneLike.getId())
+                .doesNotContain(noLikes.getId());
+        assertThat(filmStorage.topFilmsByLikes(1)).hasSize(1);
+    }
+
     private User newUser(String login) {
         User user = new User();
         user.setEmail(login + "@mail.ru");

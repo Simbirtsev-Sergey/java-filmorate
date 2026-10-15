@@ -153,4 +153,19 @@ public class FilmService {
             throw new ValidationException("Продолжительность фильма должна быть положительным числом");
         }
     }
+
+    public Collection<FilmDto> searchByDirectorAndName(String query, List<String> by) {
+        System.out.println(query);
+        if (query.isBlank())
+            return getFilms();
+
+        if (by.isEmpty()) {
+            throw new ConditionsNotMetException("Параметр \"By\" должен содержать хотя бы 1 из 2 параметров: director, title");
+        }
+
+        return filmDbStorage.searchByParams(query, by)
+                .stream()
+                .map(FilmMapper::mapToFilmDto)
+                .toList();
+    }
 }

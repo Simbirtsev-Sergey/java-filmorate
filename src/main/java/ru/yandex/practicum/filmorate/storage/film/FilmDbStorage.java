@@ -7,6 +7,8 @@ import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dto.genre.GenreDto;
+import ru.yandex.practicum.filmorate.exception.ConditionsNotMetException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.BaseStorage;
 
@@ -45,6 +47,9 @@ public class FilmDbStorage extends BaseStorage<Film> implements FilmStorage {
             "JOIN Genres g ON g.genre_id = fg.genre_id WHERE fg.film_id = ? ORDER BY g.genre_id";
     private static final String FIND_ALL_FILM_GENRES_QUERY = "SELECT fg.film_id, g.genre_id, g.name " +
             "FROM Film_genres fg JOIN Genres g ON g.genre_id = fg.genre_id ORDER BY fg.film_id, g.genre_id";
+    private static final String SEARCH_BY_PARAMS = "SELECT f.*, r.name AS rating_name FROM Films f " +
+            "LEFT JOIN (SELECT film_id, COUNT(*) AS likes FROM Film_likes GROUP BY film_id) l ON f.film_id = l.film_id " +
+            "LEFT JOIN Ratings r ON f.rating_id = r.rating_id WHERE ";
 
     @Autowired
     public FilmDbStorage(final JdbcTemplate jdbc, final RowMapper<Film> mapper) {
@@ -112,6 +117,22 @@ public class FilmDbStorage extends BaseStorage<Film> implements FilmStorage {
     @Override
     public List<Film> topFilmsByLikes(final int count) {
         return withGenres(findMany(TOP_FILMS_BY_LIKES_QUERY, count));
+    }
+
+    @Override
+    public Collection<Film> searchByParams(String query, List<String> by) {
+        String request;
+        //когда добавим режиссеров в фильмы надо будет раскомментировать
+        if /*(by.containsAll(List.of("title", "director"))) {
+            request = SEARCH_BY_PARAMS + "f.name LIKE('%" + query + "%') + " f.director LIKE('%"+query+"%') ORDER BY l.likes DESC";
+            return findMany(request);
+        } else if */ (by.contains("title")) {
+            request = SEARCH_BY_PARAMS + "f.name LIKE('%" + query + "%') ORDER BY l.likes DESC";
+            return findMany(request);
+        } /*else if (by.contains("director")) {
+            request = SEARCH_BY_PARAMS + "f.director LIKE('%" + query + "%') ORDER BY l.likes DESC";
+            return findMany(request);
+        }*/ else throw new ConditionsNotMetException("Неверные параметры для \"by\"");
     }
 
     // В колонку rating_id пишется id рейтинга, а не объект целиком; у фильма без рейтинга — NULL
