@@ -6,12 +6,17 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.ExcessiveActionException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserDbStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -19,18 +24,24 @@ import java.util.stream.Collectors;
 public class UserService {
     private final UserStorage userDbStorage;
 
+    private final FilmStorage filmStorage;
+
     @Autowired
-    public UserService(final UserDbStorage userDbStorage) {
+    public UserService(final UserDbStorage userDbStorage, FilmStorage filmStorage) {
         this.userDbStorage = userDbStorage;
+        this.filmStorage = filmStorage;
     }
 
-    public UserService(final InMemoryUserStorage userStorage) {
+    public UserService(final InMemoryUserStorage userStorage, FilmStorage filmStorage) {
         this.userDbStorage = userStorage;
+        this.filmStorage = filmStorage;
     }
 
-    public UserService(final UserStorage userStorage) {
+    public UserService(final UserStorage userStorage, FilmStorage filmStorage) {
         this.userDbStorage = userStorage;
+        this.filmStorage = filmStorage;
     }
+
 
     public Collection<User> getUsers() {
         return userDbStorage.getUsers();
@@ -54,8 +65,7 @@ public class UserService {
         checkingUser(id);
         log.debug("Проверка на существование пользователя с id = {} при добавлении друга пройдена успешно", id);
         checkingUser(friendId);
-        log.debug("Проверка на существование пользователя с otherId = {} при добавлении друга пройдена успешно",
-                friendId);
+        log.debug("Проверка на существование пользователя с otherId = {} при добавлении друга пройдена успешно", friendId);
 
         if (userDbStorage.hasFriendAdded(id, friendId)) {
             log.debug("Друг с friendId = {} пользователя с id = {} уже добавлен", friendId, id);
@@ -70,8 +80,7 @@ public class UserService {
         checkingUser(id);
         log.debug("Проверка на существование пользователя с id = {} при удалении друга пройдена успешно", id);
         checkingUser(friendId);
-        log.debug("Проверка на существование пользователя с otherId = {} при удалении друга пройдена успешно",
-                friendId);
+        log.debug("Проверка на существование пользователя с otherId = {} при удалении друга пройдена успешно", friendId);
 
         userDbStorage.deleteFriend(id, friendId);
         log.debug("Друг с friendId = {} пользователя с id = {} успешно удален", friendId, id);
@@ -89,18 +98,25 @@ public class UserService {
         checkingUser(id);
         log.debug("Проверка на существование пользователя с id = {} при поиске общих друзей пройдена успешно", id);
         checkingUser(otherId);
-        log.debug("Проверка на существование пользователя с otherId = {} при поиске общих друзей пройдена успешно",
-                otherId);
+        log.debug("Проверка на существование пользователя с otherId = {} при поиске общих друзей пройдена успешно", otherId);
 
         List<User> friendsUsers = userDbStorage.findFriends(id);
 
         List<Long> commonFriends = findCommonFriends(friendsUsers, userDbStorage.findFriends(otherId));
 
-        return friendsUsers.stream()
-                .map(User::getId)
-                .filter(commonFriends::contains)
-                .map((idUser) -> userDbStorage.getUserById(idUser).orElseThrow())
-                .toList();
+        return friendsUsers.stream().map(User::getId).filter(commonFriends::contains).map((idUser) -> userDbStorage.getUserById(idUser).orElseThrow()).toList();
+    }
+    
+    public Collection<Film> getRecommendations(Long userId) {
+        Collection<Long> filmIds = userDbStorage.getRecommendations(userId);
+
+        if (filmIds.isEmpty()) {
+            return List.of();
+        }
+
+        Set<Long> recommendationIds = new HashSet<>(filmIds);
+
+        return filmStorage.getFilms().stream().filter(film -> recommendationIds.contains(film.getId())).collect(Collectors.toList());
     }
 
     private void checkingUser(final Long id) {
@@ -110,12 +126,8 @@ public class UserService {
     }
 
     private List<Long> findCommonFriends(List<User> list1, List<User> list2) {
-        List<Long> q1 = list1.stream()
-                .map(User::getId)
-                .toList();
-        List<Long> q2 = list2.stream()
-                .map(User::getId)
-                .toList();
+        List<Long> q1 = list1.stream().map(User::getId).toList();
+        List<Long> q2 = list2.stream().map(User::getId).toList();
 
 
         return q1.stream().filter(q2::contains).collect(Collectors.toList());
