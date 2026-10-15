@@ -18,6 +18,7 @@ import ru.yandex.practicum.filmorate.storage.user.UserDbStorage;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -327,27 +328,19 @@ class FilmorateApplicationTests {
     }
 
     @Test
-    public void testTopFilmsByLikes() {
-        User user1 = userStorage.create(newUser("user1"));
-        User user2 = userStorage.create(newUser("user2"));
-        User user3 = userStorage.create(newUser("user3"));
-        Film oneLike = filmStorage.create(newFilm("Один лайк", 1L));
-        Film threeLikes = filmStorage.create(newFilm("Три лайка", 1L));
-        Film twoLikes = filmStorage.create(newFilm("Два лайка", 1L));
-        Film noLikes = filmStorage.create(newFilm("Без лайков", 1L));
+    public void testSearchByParams() {
+        Film film1 = filmStorage.create(newFilm("Звёздные войны", 1L));
+        Film film2 = filmStorage.create(newFilm("Час пик", 1L));
+        Film film3 = filmStorage.create(newFilm("Миссия не выполнима", 1L));
+        Film film4 = filmStorage.create(newFilm("Крёстный отец", 1L));
 
-        filmStorage.insertLike(oneLike.getId(), user1.getId());
-        filmStorage.insertLike(threeLikes.getId(), user1.getId());
-        filmStorage.insertLike(threeLikes.getId(), user2.getId());
-        filmStorage.insertLike(threeLikes.getId(), user3.getId());
-        filmStorage.insertLike(twoLikes.getId(), user1.getId());
-        filmStorage.insertLike(twoLikes.getId(), user2.getId());
-
-        assertThat(filmStorage.topFilmsByLikes(10))
+        assertThat(filmStorage.searchByParams("ны", List.of("title")))
                 .extracting(Film::getId)
-                .containsSubsequence(threeLikes.getId(), twoLikes.getId(), oneLike.getId())
-                .doesNotContain(noLikes.getId());
+                .containsSubsequence(film1.getId(), film4.getId())
+                .doesNotContain(film2.getId(), film3.getId());
         assertThat(filmStorage.topFilmsByLikes(1)).hasSize(1);
+
+        //добавить тесты для режиссёров
     }
 
     private User newUser(String login) {
