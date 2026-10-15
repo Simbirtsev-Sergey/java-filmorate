@@ -106,7 +106,7 @@ public class UserService {
 
         return friendsUsers.stream().map(User::getId).filter(commonFriends::contains).map((idUser) -> userDbStorage.getUserById(idUser).orElseThrow()).toList();
     }
-    
+
     public Collection<Film> getRecommendations(Long userId) {
         Collection<Long> filmIds = userDbStorage.getRecommendations(userId);
 
