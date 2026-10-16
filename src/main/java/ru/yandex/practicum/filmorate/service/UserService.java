@@ -3,10 +3,11 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dto.film.FilmDto;
 import ru.yandex.practicum.filmorate.exception.ExcessiveActionException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
-import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
@@ -107,7 +108,7 @@ public class UserService {
         return friendsUsers.stream().map(User::getId).filter(commonFriends::contains).map((idUser) -> userDbStorage.getUserById(idUser).orElseThrow()).toList();
     }
 
-    public Collection<Film> getRecommendations(Long userId) {
+    public Collection<FilmDto> getRecommendations(Long userId) {
         Collection<Long> filmIds = userDbStorage.getRecommendations(userId);
 
         if (filmIds.isEmpty()) {
@@ -116,7 +117,11 @@ public class UserService {
 
         Set<Long> recommendationIds = new HashSet<>(filmIds);
 
-        return filmStorage.getFilms().stream().filter(film -> recommendationIds.contains(film.getId())).collect(Collectors.toList());
+        return filmStorage.getFilms()
+                .stream()
+                .filter(film -> recommendationIds.contains(film.getId()))
+                .map(FilmMapper::mapToFilmDto)
+                .collect(Collectors.toList());
     }
 
     private void checkingUser(final Long id) {
