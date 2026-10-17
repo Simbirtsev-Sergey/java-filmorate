@@ -53,6 +53,7 @@ public class UserService {
     }
 
     public Optional<User> getUserById(final Long userId) {
+        checkingUser(userId);
         return userDbStorage.getUserById(userId);
     }
 
