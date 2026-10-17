@@ -9,5 +9,5 @@ public interface ActionStorage {
 
     void createAction(final Action action);
 
-    Action create(final Long userId, final Long operation_id, final Long event_type_id, final Long entity_id);
+    Action create(final Long userId, final Long operationId, final Long eventTypeId, final Long entityId);
 }
