@@ -321,8 +321,7 @@ class FilmorateApplicationTests {
 
         assertThat(filmStorage.topFilmsByLikes(10))
                 .extracting(Film::getId)
-                .containsSubsequence(threeLikes.getId(), twoLikes.getId(), oneLike.getId())
-                .doesNotContain(noLikes.getId());
+                .containsSubsequence(threeLikes.getId(), twoLikes.getId(), oneLike.getId(), noLikes.getId());
         assertThat(filmStorage.topFilmsByLikes(1)).hasSize(1);
     }
 
