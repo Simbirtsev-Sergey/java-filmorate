@@ -38,7 +38,7 @@ public class UserDbStorage extends BaseStorage<User> implements UserStorage {
             "WHERE peer.user_id = ? AND " +
             "NOT EXISTS (SELECT 1 " +
             "FROM Film_likes mine " +
-            "WHERE mine.user_id AND mine.film_id = peer.film_id) " +
+            "WHERE mine.user_id = ? AND mine.film_id = peer.film_id) " +
             "ORDER BY peer.film_id";
 
     private record UserSimilarity(Long userId, int commonLikes) {
