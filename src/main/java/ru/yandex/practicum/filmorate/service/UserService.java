@@ -6,7 +6,10 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.ExcessiveActionException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.model.Action;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.action.ActionDbStorage;
+import ru.yandex.practicum.filmorate.storage.action.ActionStorage;
 import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserDbStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
@@ -18,18 +21,22 @@ import java.util.stream.Collectors;
 @Service
 public class UserService {
     private final UserStorage userDbStorage;
+    private final ActionStorage actionStorage;
 
     @Autowired
-    public UserService(final UserDbStorage userDbStorage) {
+    public UserService(final UserDbStorage userDbStorage, final ActionDbStorage actionDbStorage) {
         this.userDbStorage = userDbStorage;
+        this.actionStorage = actionDbStorage;
     }
 
-    public UserService(final InMemoryUserStorage userStorage) {
+    public UserService(final InMemoryUserStorage userStorage, ActionStorage actionStorage) {
         this.userDbStorage = userStorage;
+        this.actionStorage = actionStorage;
     }
 
-    public UserService(final UserStorage userStorage) {
+    public UserService(final UserStorage userStorage, final ActionStorage actionStorage) {
         this.userDbStorage = userStorage;
+        this.actionStorage = actionStorage;
     }
 
     public Collection<User> getUsers() {
@@ -62,6 +69,7 @@ public class UserService {
             throw new ExcessiveActionException("Пользователь с id = " + friendId + " уже добавлен в друзья");
         }
         userDbStorage.addFriend(id, friendId);
+        actionStorage.createAction(actionStorage.create(id, 2L, 3L, friendId));
         log.debug("Друг с friendId = {} пользователя с id = {} успешно добавлен", friendId, id);
     }
 
@@ -74,6 +82,7 @@ public class UserService {
                 friendId);
 
         userDbStorage.deleteFriend(id, friendId);
+        actionStorage.createAction(actionStorage.create(id, 1L, 3L, friendId));
         log.debug("Друг с friendId = {} пользователя с id = {} успешно удален", friendId, id);
     }
 
@@ -102,6 +111,14 @@ public class UserService {
                 .map((idUser) -> userDbStorage.getUserById(idUser).orElseThrow())
                 .toList();
     }
+
+    public Collection<Action> activityFeed(final Long id) {
+        checkingUser(id);
+        log.debug("Проверка на существование пользователя с id = {} " +
+                "при получении последнего действия друга пройдена успешно", id);
+        return actionStorage.activityFeed(id);
+    }
+
 
     private void checkingUser(final Long id) {
         if (userDbStorage.getUserById(id).isEmpty()) {

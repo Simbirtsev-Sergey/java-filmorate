@@ -8,6 +8,7 @@ import ru.yandex.practicum.filmorate.controller.UserController;
 import ru.yandex.practicum.filmorate.exception.ConditionsNotMetException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.storage.action.ActionDbStorage;
 import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
@@ -88,7 +89,7 @@ public class UserTest {
 
         UserStorage userStorage = new InMemoryUserStorage();
 
-        UserService userService = new UserService(userStorage);
+        UserService userService = new UserService(userStorage, new ActionDbStorage(null, null));
 
         UserController controller = new UserController(userService);
 
@@ -108,7 +109,7 @@ public class UserTest {
 
         UserStorage userStorage = new InMemoryUserStorage();
 
-        UserService userService = new UserService(userStorage);
+        UserService userService = new UserService(userStorage, null);
 
         UserController controller = new UserController(userService);
 
@@ -135,7 +136,7 @@ public class UserTest {
 
         UserStorage userStorage = new InMemoryUserStorage();
 
-        UserService userService = new UserService(userStorage);
+        UserService userService = new UserService(userStorage, new ActionDbStorage(null, null));
 
         UserController controller = new UserController(userService);
 
@@ -155,7 +156,7 @@ public class UserTest {
     void getUsersReturnsNoCreatedUser() {
         UserStorage userStorage = new InMemoryUserStorage();
 
-        UserService userService = new UserService(userStorage);
+        UserService userService = new UserService(userStorage, new ActionDbStorage(null, null));
 
         UserController controller = new UserController(userService);
 
@@ -177,7 +178,7 @@ public class UserTest {
 
         UserStorage userStorage = new InMemoryUserStorage();
 
-        UserService userService = new UserService(userStorage);
+        UserService userService = new UserService(userStorage, new ActionDbStorage(null, null));
 
         UserController controller = new UserController(userService);
 
@@ -209,7 +210,7 @@ public class UserTest {
 
         UserStorage userStorage = new InMemoryUserStorage();
 
-        UserService userService = new UserService(userStorage);
+        UserService userService = new UserService(userStorage, new ActionDbStorage(null, null));
 
         UserController controller = new UserController(userService);
 
@@ -233,7 +234,7 @@ public class UserTest {
 
         UserStorage userStorage = new InMemoryUserStorage();
 
-        UserService userService = new UserService(userStorage);
+        UserService userService = new UserService(userStorage, new ActionDbStorage(null, null));
 
         UserController controller = new UserController(userService);
 
