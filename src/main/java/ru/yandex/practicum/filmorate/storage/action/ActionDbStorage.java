@@ -45,14 +45,14 @@ public class ActionDbStorage extends BaseStorage<Action> implements ActionStorag
     }
 
     public Action create(final Long userId,
-                         final Long operation_id,
-                         final Long event_type_id,
-                         final Long entity_id) {
+                         final Long operationId,
+                         final Long eventTypeId,
+                         final Long entityId) {
         return new Action(Instant.now().toEpochMilli(),
                 userId,
-                operation_id,
-                event_type_id,
-                entity_id
+                operationId,
+                eventTypeId,
+                entityId
         );
     }
 }
