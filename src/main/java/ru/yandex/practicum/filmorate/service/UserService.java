@@ -13,6 +13,7 @@ import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -49,6 +50,10 @@ public class UserService {
 
     public void delete(final Long userId) {
         userDbStorage.delete(userId);
+    }
+
+    public Optional<User> getUserById(final Long userId) {
+        return userDbStorage.getUserById(userId);
     }
 
     // Добавление в друзья

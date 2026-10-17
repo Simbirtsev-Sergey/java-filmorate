@@ -9,6 +9,7 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
 import java.util.Collection;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/users")
@@ -20,6 +21,11 @@ public class UserController {
     @Autowired
     public UserController(final UserService userService) {
         this.userService = userService;
+    }
+
+    @GetMapping("/{userId}")
+    public Optional<User> getUserById(@PathVariable final Long userId) {
+        return userService.getUserById(userId);
     }
 
     @GetMapping
