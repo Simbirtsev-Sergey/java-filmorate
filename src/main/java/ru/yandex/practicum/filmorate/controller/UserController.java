@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Positive;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.dto.film.FilmDto;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
@@ -56,5 +57,10 @@ public class UserController {
     public Collection<User> mutualFriends(@PathVariable @Positive final Long id,
                                           @PathVariable @Positive final Long otherId) {
         return userService.mutualFriends(id, otherId);
+    }
+
+    @GetMapping("/{id}/recommendations")
+    public Collection<FilmDto> getRecommendations(@Positive @PathVariable final Long id) {
+        return userService.getRecommendations(id);
     }
 }
