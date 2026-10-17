@@ -99,16 +99,19 @@ public class UserService {
         checkingUser(id);
         log.debug("Проверка на существование пользователя с id = {} при поиске общих друзей пройдена успешно", id);
         checkingUser(otherId);
-        log.debug("Проверка на существование пользователя с otherId = {} при поиске общих друзей пройдена успешно", otherId);
+        log.debug("Проверка на существование пользователя с otherId = {} при поиске общих друзей пройдена успешно",
+                otherId);
 
         List<User> friendsUsers = userDbStorage.findFriends(id);
 
         List<Long> commonFriends = findCommonFriends(friendsUsers, userDbStorage.findFriends(otherId));
 
-        return friendsUsers.stream().map(User::getId).filter(commonFriends::contains).map((idUser) -> userDbStorage.getUserById(idUser).orElseThrow()).toList();
+        return friendsUsers.stream().map(User::getId).filter(commonFriends::contains).map((idUser) ->
+                userDbStorage.getUserById(idUser).orElseThrow()).toList();
     }
 
     public Collection<FilmDto> getRecommendations(Long userId) {
+        checkingUser(userId);
         Collection<Long> filmIds = userDbStorage.getRecommendations(userId);
 
         if (filmIds.isEmpty()) {

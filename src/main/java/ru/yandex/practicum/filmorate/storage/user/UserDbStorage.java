@@ -31,10 +31,15 @@ public class UserDbStorage extends BaseStorage<User> implements UserStorage {
             "UPDATE Friendships SET application_id = ? WHERE sender_id = ? AND recipient_id = ?";
     private static final String FIND_SIMILAR_USERS_QUERY = "SELECT other.user_id, COUNT(*) AS common_likes " +
             "FROM Film_likes mine JOIN Film_likes other ON other.film_id = mine.film_id " +
-            "WHERE mine.user_id = ? AND other.user_id <> ? GROUP BY other.user_id ORDER BY common_likes DESC";
+            "WHERE mine.user_id = ? AND other.user_id <> ? " +
+            "GROUP BY other.user_id " +
+            "ORDER BY common_likes DESC";
     private static final String FIND_RECOMMENDED_FILM_QUERY = "SELECT peer.film_id FROM Film_likes peer " +
-            "WHERE peer.user_id = ? AND NOT EXISTS (SELECT 1 FROM Film_likes mine WHERE mine.user_id = ? " +
-            "AND mine.film_id = peer.film_id) ORDER BY peer.film_id";
+            "WHERE peer.user_id = ? AND " +
+            "NOT EXISTS (SELECT 1 " +
+            "FROM Film_likes mine " +
+            "WHERE mine.user_id AND mine.film_id = peer.film_id) " +
+            "ORDER BY peer.film_id";
 
     private record UserSimilarity(Long userId, int commonLikes) {
     }
