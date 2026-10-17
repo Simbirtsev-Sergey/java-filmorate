@@ -53,6 +53,12 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
+    public void delete(Long filmId) {
+        films.remove(filmId);
+        log.info("Фильм успешно удалён");
+    }
+
+    @Override
     public Optional<Film> getFilmById(final Long filmId) {
         return Optional.ofNullable(films.get(filmId));
     }

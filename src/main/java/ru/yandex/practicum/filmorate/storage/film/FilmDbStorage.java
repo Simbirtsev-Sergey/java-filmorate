@@ -12,13 +12,7 @@ import ru.yandex.practicum.filmorate.storage.BaseStorage;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 @Repository
 @Primary
@@ -84,6 +78,12 @@ public class FilmDbStorage extends BaseStorage<Film> implements FilmStorage {
         jdbc.update(DELETE_FILM_GENRES_QUERY, newFilm.getId());
         saveGenres(newFilm.getId(), newFilm.getGenres());
         return newFilm;
+    }
+
+    @Override
+    public void delete(Long filmId) {
+        String sql = "DELETE FROM Films WHERE film_id = ?";
+        jdbc.update(sql, filmId);
     }
 
     @Override
