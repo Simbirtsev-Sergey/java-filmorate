@@ -11,7 +11,9 @@ import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserDbStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -44,6 +46,15 @@ public class UserService {
     public User update(final User newUser) {
         validationName(newUser);
         return userDbStorage.update(newUser);
+    }
+
+    public void delete(final Long userId) {
+        userDbStorage.delete(userId);
+    }
+
+    public Optional<User> getUserById(final Long userId) {
+        checkingUser(userId);
+        return userDbStorage.getUserById(userId);
     }
 
     // Добавление в друзья
