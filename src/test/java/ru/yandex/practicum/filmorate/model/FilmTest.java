@@ -12,6 +12,7 @@ import ru.yandex.practicum.filmorate.exception.ConditionsNotMetException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.storage.action.ActionDbStorage;
 import ru.yandex.practicum.filmorate.storage.film.InMemoryFilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
 
@@ -172,7 +173,8 @@ public class FilmTest {
 
     // Хранилища жанров и рейтингов здесь не нужны: фильмы в этих тестах создаются без жанров и рейтинга
     private FilmController createController() {
-        FilmService filmService = new FilmService(new InMemoryFilmStorage(), new InMemoryUserStorage(), null, null);
+        FilmService filmService = new FilmService(new InMemoryFilmStorage(), new InMemoryUserStorage(),
+                null, null, new ActionDbStorage(null, null));
         return new FilmController(filmService);
     }
 
