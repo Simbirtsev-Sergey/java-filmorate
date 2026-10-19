@@ -20,7 +20,6 @@ import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.*;
 
-
 @Service
 @Slf4j
 public class ReviewService {
