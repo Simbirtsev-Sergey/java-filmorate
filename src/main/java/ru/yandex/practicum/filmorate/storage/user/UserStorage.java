@@ -26,4 +26,6 @@ public interface UserStorage {
     boolean hasFriendAdded(final Long id, final Long friendId);
 
     List<User> findFriends(final Long id);
+
+    Collection<Long> getRecommendations(final Long id);
 }
