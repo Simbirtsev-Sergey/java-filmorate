@@ -115,6 +115,15 @@ public class FilmService {
                 .toList();
     }
 
+    public Collection<FilmDto> getCommon(Long userId, Long friendId) {
+        checkUserExists(userId);
+        checkUserExists(friendId);
+        return filmDbStorage.getCommon(userId, friendId)
+                .stream()
+                .map(FilmMapper::mapToFilmDto)
+                .toList();
+    }
+
     private void checkUserExists(final Long userId) {
         if (userDbStorage.getUsers().stream().mapToLong(User::getId).noneMatch(id -> id == userId)) {
             throw new NotFoundException("Пользователя с id = " + userId + " не существует");

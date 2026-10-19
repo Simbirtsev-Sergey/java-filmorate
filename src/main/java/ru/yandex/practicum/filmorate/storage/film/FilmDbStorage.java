@@ -12,13 +12,7 @@ import ru.yandex.practicum.filmorate.storage.BaseStorage;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 @Repository
 @Primary
@@ -45,6 +39,12 @@ public class FilmDbStorage extends BaseStorage<Film> implements FilmStorage {
             "JOIN Genres g ON g.genre_id = fg.genre_id WHERE fg.film_id = ? ORDER BY g.genre_id";
     private static final String FIND_ALL_FILM_GENRES_QUERY = "SELECT fg.film_id, g.genre_id, g.name " +
             "FROM Film_genres fg JOIN Genres g ON g.genre_id = fg.genre_id ORDER BY fg.film_id, g.genre_id";
+    private static final String COMMON_FILMS_QUERY = SELECT_FILMS +
+            "JOIN (SELECT film_id, COUNT(*) AS likes FROM Film_likes GROUP BY film_id) l " +
+            "ON f.film_id = l.film_id " +
+            "WHERE f.film_id IN (SELECT film_id FROM Film_likes WHERE user_id = ?) " +
+            "AND f.film_id IN (SELECT film_id FROM Film_likes WHERE user_id = ?) " +
+            "ORDER BY l.likes DESC, f.film_id";
 
     @Autowired
     public FilmDbStorage(final JdbcTemplate jdbc, final RowMapper<Film> mapper) {
@@ -112,6 +112,11 @@ public class FilmDbStorage extends BaseStorage<Film> implements FilmStorage {
     @Override
     public List<Film> topFilmsByLikes(final int count) {
         return withGenres(findMany(TOP_FILMS_BY_LIKES_QUERY, count));
+    }
+
+    @Override
+    public Collection<Film> getCommon(Long userId, Long friendId) {
+        return withGenres(findMany(COMMON_FILMS_QUERY, userId, friendId));
     }
 
     // В колонку rating_id пишется id рейтинга, а не объект целиком; у фильма без рейтинга — NULL
