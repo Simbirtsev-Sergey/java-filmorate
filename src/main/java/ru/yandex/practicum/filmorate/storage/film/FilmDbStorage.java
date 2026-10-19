@@ -30,7 +30,7 @@ public class FilmDbStorage extends BaseStorage<Film> implements FilmStorage {
     private static final String ADD_LIKE_TO_FILM_QUERY = "INSERT INTO Film_likes(user_id, film_id) VALUES(?, ?)";
     private static final String DELETE_LIKE_TO_FILM_QUERY = "DELETE FROM Film_likes WHERE user_id = ? AND film_id = ?";
     private static final String TOP_FILMS_BY_LIKES_QUERY = "SELECT f.*, r.name AS rating_name FROM Films f " +
-            "JOIN (SELECT film_id, COUNT(*) AS likes FROM Film_likes GROUP BY film_id) l ON f.film_id = l.film_id " +
+            "LEFT JOIN (SELECT film_id, COUNT(*) AS likes FROM Film_likes GROUP BY film_id) l ON f.film_id = l.film_id " +
             "LEFT JOIN Ratings r ON f.rating_id = r.rating_id " +
             "ORDER BY l.likes DESC, f.film_id LIMIT ?";
     private static final String INSERT_FILM_GENRE_QUERY = "INSERT INTO Film_genres(film_id, genre_id) VALUES(?, ?)";
@@ -84,6 +84,12 @@ public class FilmDbStorage extends BaseStorage<Film> implements FilmStorage {
         jdbc.update(DELETE_FILM_GENRES_QUERY, newFilm.getId());
         saveGenres(newFilm.getId(), newFilm.getGenres());
         return newFilm;
+    }
+
+    @Override
+    public void delete(Long filmId) {
+        String sql = "DELETE FROM Films WHERE film_id = ?";
+        jdbc.update(sql, filmId);
     }
 
     @Override

@@ -19,7 +19,7 @@ import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.time.Duration;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.Collection;
 
 @Slf4j
 @Service
@@ -74,6 +74,14 @@ public class FilmService {
         checkMpaAndGenresExist(updatedFilm);
         updatedFilm = filmDbStorage.update(updatedFilm);
         return getFilmById(updatedFilm.getId());
+    }
+
+    public void deleteById(final Long filmId) {
+        if (filmDbStorage.getFilmById(filmId).isEmpty()) {
+            throw new NotFoundException("Переданного фильма не существует");
+        } else {
+            filmDbStorage.delete(filmId);
+        }
     }
 
     // Добавление лайка

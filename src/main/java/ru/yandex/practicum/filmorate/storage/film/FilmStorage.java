@@ -15,6 +15,8 @@ public interface FilmStorage {
 
     Film update(@Valid @RequestBody final Film newFilm);
 
+    void delete(final Long filmId);
+
     Optional<Film> getFilmById(final Long filmId);
 
     boolean existsUserAndFilm(final Long filmId, final Long userId);

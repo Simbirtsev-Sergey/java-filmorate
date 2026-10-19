@@ -15,6 +15,8 @@ public interface UserStorage {
 
     User update(@Valid @RequestBody final User newUser);
 
+    void delete(final Long userId);
+
     Optional<User> getUserById(final Long userId);
 
     void addFriend(final Long id, final Long friendId);
