@@ -60,7 +60,6 @@ public class FilmService {
         checkMpaAndGenresAndDirectorExist(film);
 
         film = filmDbStorage.create(film);
-
         // Перечитываем фильм из базы: так в ответе будут названия рейтинга и жанров, а жанры — по порядку id
         return getFilmById(film.getId());
     }
@@ -162,7 +161,7 @@ public class FilmService {
         }
         if (film.getDirector() != null && film.getDirector().getId() != null
                 && directorStorage.getDirectorById(film.getDirector().getId()).isEmpty()) {
-            throw new NotFoundException("Рейтинга с id = " + film.getDirector().getId() + " не существует");
+            throw new NotFoundException("Режиссера с id = " + film.getDirector().getId() + " не существует");
         }
     }
 

@@ -64,6 +64,6 @@ public class UpdateFilmRequest {
     }
 
     public boolean hasDirector() {
-        return director != null;
+        return director != null && director.getId() != null;
     }
 }

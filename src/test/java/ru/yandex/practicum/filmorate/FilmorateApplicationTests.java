@@ -6,30 +6,32 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
+import ru.yandex.practicum.filmorate.dal.mappers.DirectorRowMapper;
 import ru.yandex.practicum.filmorate.dal.mappers.FilmRowMapper;
 import ru.yandex.practicum.filmorate.dal.mappers.UserRowMapper;
+import ru.yandex.practicum.filmorate.dto.director.DirectorDto;
 import ru.yandex.practicum.filmorate.dto.genre.GenreDto;
 import ru.yandex.practicum.filmorate.dto.rating.RatingDto;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.Director.DirectorDbStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmDbStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserDbStorage;
 
 import java.time.Duration;
 import java.time.LocalDate;
-import java.util.LinkedHashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @JdbcTest
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
-@Import({UserDbStorage.class, UserRowMapper.class, FilmDbStorage.class, FilmRowMapper.class})
+@Import({UserDbStorage.class, UserRowMapper.class, FilmDbStorage.class, DirectorDbStorage.class, DirectorRowMapper.class, FilmRowMapper.class})
 class FilmorateApplicationTests {
     private final UserDbStorage userStorage;
     private final FilmDbStorage filmStorage;
+    private final DirectorDbStorage directorStorage;
 
     // Тестируем UserDbStorage
 
@@ -188,14 +190,14 @@ class FilmorateApplicationTests {
 
     @Test
     public void testCreateFilm() {
-        Film created = filmStorage.create(newFilm("Матрица", 1L, 1L));
+        Film created = filmStorage.create(newFilm("Матрица", 1L, null, 1L));
 
         assertThat(created.getId()).isNotNull();
     }
 
     @Test
     public void testGetFilmById() {
-        Film created = filmStorage.create(newFilm("Матрица", 3L, 2L, 1L));
+        Film created = filmStorage.create(newFilm("Матрица", 3L, null, 2L, 1L));
 
         Optional<Film> filmOptional = filmStorage.getFilmById(created.getId());
 
@@ -217,7 +219,7 @@ class FilmorateApplicationTests {
 
     @Test
     public void testGetFilmWithoutMpaAndGenres() {
-        Film created = filmStorage.create(newFilm("Без рейтинга", null));
+        Film created = filmStorage.create(newFilm("Без рейтинга", null, null));
 
         assertThat(filmStorage.getFilmById(created.getId()))
                 .hasValueSatisfying(film -> {
@@ -233,8 +235,8 @@ class FilmorateApplicationTests {
 
     @Test
     public void testGetFilms() {
-        Film film1 = filmStorage.create(newFilm("Первый", 1L, 1L, 2L));
-        Film film2 = filmStorage.create(newFilm("Второй", 2L));
+        Film film1 = filmStorage.create(newFilm("Первый", 1L, null, 1L, 2L));
+        Film film2 = filmStorage.create(newFilm("Второй", 2L, null, 1L));
 
         assertThat(filmStorage.getFilms())
                 .extracting(Film::getId)
@@ -248,7 +250,7 @@ class FilmorateApplicationTests {
     @Test
     public void testUpdateFilm() {
         Film film = filmStorage.create(newFilm("Матрица", 1L, 1L));
-        Film newFilm = newFilm("Матрица: Перезагрузка", 3L, 4L, 3L);
+        Film newFilm = newFilm("Матрица: Перезагрузка", 3L, null, 4L, 3L);
         newFilm.setId(film.getId());
         newFilm.setDescription("Новое описание");
         newFilm.setReleaseDate(LocalDate.of(2003, 5, 15));
@@ -282,7 +284,7 @@ class FilmorateApplicationTests {
     @Test
     public void testInsertLike() {
         User user = userStorage.create(newUser("user"));
-        Film film = filmStorage.create(newFilm("Матрица", 1L));
+        Film film = filmStorage.create(newFilm("Матрица", 1L, null, 1L));
 
         assertThat(filmStorage.existsUserAndFilm(film.getId(), user.getId())).isFalse();
 
@@ -294,7 +296,7 @@ class FilmorateApplicationTests {
     @Test
     public void testDeleteLike() {
         User user = userStorage.create(newUser("user"));
-        Film film = filmStorage.create(newFilm("Матрица", 1L));
+        Film film = filmStorage.create(newFilm("Матрица", 1L, null, 1L));
         filmStorage.insertLike(film.getId(), user.getId());
 
         filmStorage.deleteLike(film.getId(), user.getId());
@@ -307,10 +309,10 @@ class FilmorateApplicationTests {
         User user1 = userStorage.create(newUser("user1"));
         User user2 = userStorage.create(newUser("user2"));
         User user3 = userStorage.create(newUser("user3"));
-        Film oneLike = filmStorage.create(newFilm("Один лайк", 1L));
-        Film threeLikes = filmStorage.create(newFilm("Три лайка", 1L));
-        Film twoLikes = filmStorage.create(newFilm("Два лайка", 1L));
-        Film noLikes = filmStorage.create(newFilm("Без лайков", 1L));
+        Film oneLike = filmStorage.create(newFilm("Один лайк", 1L, null, 1L));
+        Film threeLikes = filmStorage.create(newFilm("Три лайка", 1L, null, 1L));
+        Film twoLikes = filmStorage.create(newFilm("Два лайка", 1L, null, 1L));
+        Film noLikes = filmStorage.create(newFilm("Без лайков", 1L, null, 1L));
 
         filmStorage.insertLike(oneLike.getId(), user1.getId());
         filmStorage.insertLike(threeLikes.getId(), user1.getId());
@@ -325,6 +327,97 @@ class FilmorateApplicationTests {
         assertThat(filmStorage.topFilmsByLikes(1)).hasSize(1);
     }
 
+    @Test
+    public void testGetFilmsByDirector() {
+        User user1 = userStorage.create(newUser("user1"));
+        User user2 = userStorage.create(newUser("user2"));
+        User user3 = userStorage.create(newUser("user3"));
+
+        DirectorDto director1 = directorStorage.addDirector("qwe");
+        DirectorDto director2 = directorStorage.addDirector("asd");
+        DirectorDto director3 = directorStorage.addDirector("zxc");
+
+        Film oneLike = filmStorage.create(newFilm("Один лайк", 1L, director1.getId()));
+        Film threeLikes = filmStorage.create(newFilm("Три лайка", 1L, director2.getId()));
+        Film twoLikes = filmStorage.create(newFilm("Два лайка", 1L, director2.getId()));
+        Film noLikes = filmStorage.create(newFilm("Без лайков", 1L, director3.getId()));
+
+        filmStorage.insertLike(oneLike.getId(), user1.getId());
+        filmStorage.insertLike(threeLikes.getId(), user1.getId());
+        filmStorage.insertLike(threeLikes.getId(), user2.getId());
+        filmStorage.insertLike(threeLikes.getId(), user3.getId());
+        filmStorage.insertLike(twoLikes.getId(), user1.getId());
+        filmStorage.insertLike(twoLikes.getId(), user2.getId());
+
+        Collection<Film> films = filmStorage.getByDirector(director2.getId(), "likes");
+        assertThat(films)
+                .extracting(Film::getId)
+                .containsOnly(threeLikes.getId(), twoLikes.getId());
+        assertThat(filmStorage.topFilmsByLikes(1)).hasSize(1);
+
+        films = filmStorage.getByDirector(director1.getId(), "release_date");
+        assertThat(films)
+                .extracting(Film::getId)
+                .containsOnly(oneLike.getId());
+        assertThat(filmStorage.topFilmsByLikes(1)).hasSize(1);
+    }
+
+    @Test
+    public void testGetDirectors() {
+        DirectorDto director1 = directorStorage.addDirector("qwe");
+        DirectorDto director2 = directorStorage.addDirector("asd");
+        DirectorDto director3 = directorStorage.addDirector("zxc");
+        assertThat(directorStorage.getAllDirectors())
+                .extracting(DirectorDto::getId)
+                .contains(director1.getId(), director2.getId(), director3.getId());
+        assertThat(filmStorage.topFilmsByLikes(1)).hasSize(1);
+    }
+
+    @Test
+    public void testGetDirectorById() {
+        DirectorDto director = directorStorage.addDirector("qwe");
+
+        assertThat(directorStorage.getDirectorById(director.getId()))
+                .isPresent()
+                .hasValueSatisfying(d -> {
+                    assertThat(d).hasFieldOrPropertyWithValue("id", director.getId());
+                    assertThat(d).hasFieldOrPropertyWithValue("name", director.getName());
+                });
+    }
+
+    @Test
+    public void testAddDirector() {
+        DirectorDto director = directorStorage.addDirector("qwe");
+        director = directorStorage.getDirectorById(director.getId()).orElseThrow();
+
+        assertThat(director.getName())
+                .isEqualTo("qwe");
+    }
+
+    @Test
+    public void testUpdateDirector() {
+        DirectorDto director = directorStorage.addDirector("qwe");
+        assertThat(director.getName())
+                .isEqualTo("qwe");
+        director = directorStorage.updateDirector(
+                DirectorDto.builder()
+                        .id(director.getId())
+                        .name("asd")
+                        .build()
+        );
+
+        assertThat(director.getName())
+                .isEqualTo("asd");
+    }
+
+    @Test
+    public void testDeleteDirector() {
+        DirectorDto director = directorStorage.addDirector("qwe");
+        director = directorStorage.getDirectorById(director.getId()).orElseThrow();
+        directorStorage.deleteDirector(director.getId());
+        assertThat(directorStorage.getDirectorById(director.getId()).isEmpty());
+    }
+
     private User newUser(String login) {
         User user = new User();
         user.setEmail(login + "@mail.ru");
@@ -335,7 +428,7 @@ class FilmorateApplicationTests {
     }
 
     // mpaId может быть null — тогда фильм создаётся без рейтинга
-    private Film newFilm(String name, Long mpaId, Long... genreIds) {
+    private Film newFilm(String name, Long mpaId, Long directorId, Long... genreIds) {
         Film film = new Film();
         film.setName(name);
         film.setDescription("Описание");
@@ -355,6 +448,14 @@ class FilmorateApplicationTests {
             genres.add(genre);
         }
         film.setGenres(genres);
+
+        if (directorId != null) {
+            DirectorDto director = DirectorDto
+                    .builder()
+                    .id(directorId)
+                    .build();
+            film.setDirector(director);
+        }
 
         return film;
     }

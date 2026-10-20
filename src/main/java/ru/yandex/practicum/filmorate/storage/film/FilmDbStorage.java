@@ -130,8 +130,8 @@ public class FilmDbStorage extends BaseStorage<Film> implements FilmStorage {
     @Override
     public Collection<Film> getByDirector(Long directorId, String sortBy) {
         String query = SELECT_FILMS +
-                " JOIN (SELECT film_id, COUNT(*) AS likes FROM Film_likes GROUP BY film_id) l ON f.film_id = l.film_id "
-                + " WHERE d.director_id = ? ORDER BY " + sortBy;
+                " LEFT JOIN (SELECT film_id, COUNT(*) AS likes FROM Film_likes GROUP BY film_id) l ON f.film_id = l.film_id "
+                + " WHERE d.director_id = ? ORDER BY " + sortBy + " DESC";
         return withGenres(findMany(query, directorId));
     }
 

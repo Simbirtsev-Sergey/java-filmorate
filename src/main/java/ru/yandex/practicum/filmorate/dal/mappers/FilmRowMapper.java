@@ -32,12 +32,16 @@ public class FilmRowMapper implements RowMapper<Film> {
             rating.setName(resultSet.getString("rating_name"));
             film.setMpa(rating);
         }
-        film.setDirector(
-                DirectorDto.builder()
-                        .id(resultSet.getLong("director_id"))
-                        .name(resultSet.getString("director"))
-                        .build()
-        );
+
+        Long directorId = resultSet.getObject("director_id", Long.class);
+        if (directorId != null) {
+            film.setDirector(
+                    DirectorDto.builder()
+                            .id(resultSet.getLong("director_id"))
+                            .name(resultSet.getString("director"))
+                            .build()
+            );
+        }
 
         return film;
     }
