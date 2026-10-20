@@ -12,6 +12,7 @@ import ru.yandex.practicum.filmorate.exception.*;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.action.ActionStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.rating.RatingStorage;
@@ -28,14 +29,17 @@ public class FilmService {
     private final UserStorage userDbStorage;
     private final GenreStorage genreStorage;
     private final RatingStorage ratingStorage;
+    private final ActionStorage actionStorage;
 
     @Autowired
     public FilmService(final FilmStorage filmDbStorage, final UserStorage userDbStorage,
-                       final GenreStorage genreStorage, final RatingStorage ratingStorage) {
+                       final GenreStorage genreStorage, final RatingStorage ratingStorage,
+                       final ActionStorage actionStorage) {
         this.filmDbStorage = filmDbStorage;
         this.userDbStorage = userDbStorage;
         this.genreStorage = genreStorage;
         this.ratingStorage = ratingStorage;
+        this.actionStorage = actionStorage;
     }
 
     public Collection<FilmDto> getFilms() {
@@ -98,6 +102,7 @@ public class FilmService {
         } else {
             log.debug("Лайк от пользователя с id = {} успешно добавлен", userId);
             filmDbStorage.insertLike(filmId, userId);
+            actionStorage.createAction(actionStorage.create(userId, 2L, 1L, filmId));
         }
     }
 
@@ -109,6 +114,7 @@ public class FilmService {
         if (filmDbStorage.existsUserAndFilm(filmId, userId)) {
             filmDbStorage.deleteLike(filmId, userId);
             log.debug("Лайк от пользователя с id = {} успешно удален", userId);
+            actionStorage.createAction(actionStorage.create(userId, 1L, 1L, filmId));
         } else {
             log.debug("Лайк от пользователя с id = {} уже удален или его не существовало", userId);
             throw new InternalServerException("Лайк от пользователя с id = " + userId + " не найден");
