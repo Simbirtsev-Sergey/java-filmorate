@@ -45,6 +45,15 @@ public class FilmDbStorage extends BaseStorage<Film> implements FilmStorage {
             "WHERE f.film_id IN (SELECT film_id FROM Film_likes WHERE user_id = ?) " +
             "AND f.film_id IN (SELECT film_id FROM Film_likes WHERE user_id = ?) " +
             "ORDER BY l.likes DESC, f.film_id";
+    private static final String POPULAR_BY_GENRE_QUERY = "SELECT f.*, r.name AS rating_name " +
+            "FROM Films f " +
+            "JOIN Film_genres fg ON fg.film_id = f.film_id " +
+            "LEFT JOIN (SELECT film_id, COUNT(*) AS likes FROM Film_likes GROUP BY film_id) l " +
+            "       ON l.film_id = f.film_id " +
+            "LEFT JOIN Ratings r ON f.rating_id = r.rating_id " +
+            "WHERE fg.genre_id = ? AND YEAR(f.release_date) = ? " +
+            "ORDER BY COALESCE(l.likes, 0) DESC, f.film_id " +
+            "LIMIT ?";
 
     @Autowired
     public FilmDbStorage(final JdbcTemplate jdbc, final RowMapper<Film> mapper) {
@@ -123,6 +132,11 @@ public class FilmDbStorage extends BaseStorage<Film> implements FilmStorage {
     @Override
     public Collection<Film> getCommon(Long userId, Long friendId) {
         return withGenres(findMany(COMMON_FILMS_QUERY, userId, friendId));
+    }
+
+    @Override
+    public Collection<Film> popularByGenre(int count, Long genreId, int year) {
+        return findMany(POPULAR_BY_GENRE_QUERY, genreId, year, count);
     }
 
     // В колонку rating_id пишется id рейтинга, а не объект целиком; у фильма без рейтинга — NULL
