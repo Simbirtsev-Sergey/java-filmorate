@@ -71,8 +71,8 @@ public class FilmController {
 
     @GetMapping("/popular")
     public Collection<FilmDto> getPopularByGenreYear(@RequestParam(defaultValue = "10") int count,
-                                                     @RequestParam Long genreId,
-                                                     @RequestParam int year) {
+                                                     @RequestParam(required = false) Long genreId,
+                                                     @RequestParam(required = false) Integer year) {
         return filmService.popularByGenre(count, genreId, year);
     }
 }

@@ -45,13 +45,14 @@ public class FilmDbStorage extends BaseStorage<Film> implements FilmStorage {
             "WHERE f.film_id IN (SELECT film_id FROM Film_likes WHERE user_id = ?) " +
             "AND f.film_id IN (SELECT film_id FROM Film_likes WHERE user_id = ?) " +
             "ORDER BY l.likes DESC, f.film_id";
-    private static final String POPULAR_BY_GENRE_QUERY = "SELECT f.*, r.name AS rating_name " +
-            "FROM Films f " +
-            "JOIN Film_genres fg ON fg.film_id = f.film_id " +
+    private static final String POPULAR_BY_GENRE_QUERY = "SELECT f.*, r.name AS rating_name FROM Films f " +
             "LEFT JOIN (SELECT film_id, COUNT(*) AS likes FROM Film_likes GROUP BY film_id) l " +
             "       ON l.film_id = f.film_id " +
             "LEFT JOIN Ratings r ON f.rating_id = r.rating_id " +
-            "WHERE fg.genre_id = ? AND YEAR(f.release_date) = ? " +
+            "WHERE (? IS NULL OR EXISTS (" +
+            "        SELECT 1 FROM Film_genres fg " +
+            "        WHERE fg.film_id = f.film_id AND fg.genre_id = ?)) " +
+            "  AND (? IS NULL OR YEAR(f.release_date) = ?) " +
             "ORDER BY COALESCE(l.likes, 0) DESC, f.film_id " +
             "LIMIT ?";
 
@@ -135,8 +136,8 @@ public class FilmDbStorage extends BaseStorage<Film> implements FilmStorage {
     }
 
     @Override
-    public Collection<Film> popularByGenre(int count, Long genreId, int year) {
-        return withGenres(findMany(POPULAR_BY_GENRE_QUERY, genreId, year, count));
+    public Collection<Film> popularByGenre(int count, Long genreId, Integer year) {
+        return withGenres(findMany(POPULAR_BY_GENRE_QUERY, genreId, genreId, year, year, count));
     }
 
     // В колонку rating_id пишется id рейтинга, а не объект целиком; у фильма без рейтинга — NULL

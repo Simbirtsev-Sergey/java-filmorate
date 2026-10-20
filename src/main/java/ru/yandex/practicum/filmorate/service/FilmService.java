@@ -132,7 +132,7 @@ public class FilmService {
                 .toList();
     }
 
-    public Collection<FilmDto> popularByGenre(int count, Long genreId, int year) {
+    public Collection<FilmDto> popularByGenre(int count, Long genreId, Integer year) {
         return filmDbStorage.popularByGenre(count, genreId, year)
                 .stream()
                 .map(FilmMapper::mapToFilmDto)
