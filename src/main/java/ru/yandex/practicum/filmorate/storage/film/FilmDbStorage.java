@@ -136,7 +136,7 @@ public class FilmDbStorage extends BaseStorage<Film> implements FilmStorage {
 
     @Override
     public Collection<Film> popularByGenre(int count, Long genreId, int year) {
-        return findMany(POPULAR_BY_GENRE_QUERY, genreId, year, count);
+        return withGenres(findMany(POPULAR_BY_GENRE_QUERY, genreId, year, count));
     }
 
     // В колонку rating_id пишется id рейтинга, а не объект целиком; у фильма без рейтинга — NULL
