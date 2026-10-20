@@ -131,8 +131,8 @@ public class FilmDbStorage extends BaseStorage<Film> implements FilmStorage {
     public Collection<Film> getByDirector(Long directorId, String sortBy) {
         String query = SELECT_FILMS +
                 " JOIN (SELECT film_id, COUNT(*) AS likes FROM Film_likes GROUP BY film_id) l ON f.film_id = l.film_id "
-                + " WHERE d.director_id = ? ORDER BY ?";
-        return withGenres(findMany(query, directorId, sortBy));
+                + " WHERE d.director_id = ? ORDER BY " + sortBy;
+        return withGenres(findMany(query, directorId));
     }
 
     // В колонку rating_id пишется id рейтинга, а не объект целиком; у фильма без рейтинга — NULL

@@ -179,14 +179,13 @@ public class FilmService {
     }
 
     public Collection<FilmDto> getFilmsByDirector(Long directorId, String sortBy) {
-        if (sortBy.equals("year")) sortBy = "releaseDate";
-        else if (sortBy.equals("likes")) sortBy = "likes";
+        if (sortBy.equals("year")) sortBy = "f.release_date";
+        else if (sortBy.equals("likes")) sortBy = "l.likes";
         else throw new ConditionsNotMetException("Параметр sortBy должен быть \"year\" или \"likes\"");
 
         return filmDbStorage.getByDirector(directorId, sortBy)
                 .stream()
                 .map(FilmMapper::mapToFilmDto)
                 .toList();
-
     }
 }
