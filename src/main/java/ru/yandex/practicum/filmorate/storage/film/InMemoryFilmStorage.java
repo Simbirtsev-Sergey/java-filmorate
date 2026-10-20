@@ -19,6 +19,11 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
+    public Collection<Film> getByDirector(Long directorId, String sortBy) {
+        return List.of();
+    }
+
+    @Override
     public Film create(final Film film) {
         long nextId = getNextId();
         film.setId(nextId);

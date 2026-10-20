@@ -17,21 +17,21 @@ import java.util.*;
 @Repository
 @Primary
 public class FilmDbStorage extends BaseStorage<Film> implements FilmStorage {
-    private static final String SELECT_FILMS = "SELECT f.*, r.name AS rating_name FROM Films f " +
-            "LEFT JOIN Ratings r ON f.rating_id = r.rating_id ";
+    private static final String SELECT_FILMS = "SELECT f.*, r.name AS rating_name, d.name AS director FROM Films f " +
+            "LEFT JOIN Ratings r ON f.rating_id = r.rating_id " +
+            "LEFT JOIN Directors d ON f.director_id = d.director_id ";
     private static final String FIND_ALL_QUERY = SELECT_FILMS + "ORDER BY f.film_id";
     private static final String FIND_FILM_BY_ID_QUERY = SELECT_FILMS + "WHERE f.film_id = ?";
     private static final String UPDATE_FILM_QUERY = "UPDATE Films SET name = ?,  description = ?, release_date = ?, " +
-            "duration = ?, rating_id = ? WHERE film_id = ?";
+            "duration = ?, rating_id = ?, director_id = ? WHERE film_id = ?";
     private static final String CREATE_FILM_QUERY = "INSERT INTO Films (name, description, release_date, " +
-            "duration, rating_id) VALUES(?, ?, ?, ?, ?)";
+            "duration, rating_id, director_id) VALUES(?, ?, ?, ?, ?, ?)";
     private static final String FIND_FILM_LIKES_QUERY = "SELECT COUNT(*) FROM Film_likes " +
             "WHERE user_id = ? AND film_id = ?";
     private static final String ADD_LIKE_TO_FILM_QUERY = "INSERT INTO Film_likes(user_id, film_id) VALUES(?, ?)";
     private static final String DELETE_LIKE_TO_FILM_QUERY = "DELETE FROM Film_likes WHERE user_id = ? AND film_id = ?";
-    private static final String TOP_FILMS_BY_LIKES_QUERY = "SELECT f.*, r.name AS rating_name FROM Films f " +
+    private static final String TOP_FILMS_BY_LIKES_QUERY = SELECT_FILMS +
             "LEFT JOIN (SELECT film_id, COUNT(*) AS likes FROM Film_likes GROUP BY film_id) l ON f.film_id = l.film_id " +
-            "LEFT JOIN Ratings r ON f.rating_id = r.rating_id " +
             "ORDER BY l.likes DESC, f.film_id LIMIT ?";
     private static final String INSERT_FILM_GENRE_QUERY = "INSERT INTO Film_genres(film_id, genre_id) VALUES(?, ?)";
     private static final String DELETE_FILM_GENRES_QUERY = "DELETE FROM Film_genres WHERE film_id = ?";
@@ -63,7 +63,8 @@ public class FilmDbStorage extends BaseStorage<Film> implements FilmStorage {
                 film.getDescription(),
                 film.getReleaseDate(),
                 film.getDuration().toMinutes(),
-                mpaId(film)
+                mpaId(film),
+                directorId(film)
         );
         film.setId(id);
         saveGenres(id, film.getGenres());
@@ -78,6 +79,7 @@ public class FilmDbStorage extends BaseStorage<Film> implements FilmStorage {
                 newFilm.getReleaseDate(),
                 newFilm.getDuration().toMinutes(),
                 mpaId(newFilm),
+                directorId(newFilm),
                 newFilm.getId()
         );
         // Жанры заменяются целиком: удаляем старые связи и записываем текущий набор
@@ -125,9 +127,21 @@ public class FilmDbStorage extends BaseStorage<Film> implements FilmStorage {
         return withGenres(findMany(COMMON_FILMS_QUERY, userId, friendId));
     }
 
+    @Override
+    public Collection<Film> getByDirector(Long directorId, String sortBy) {
+        String query = SELECT_FILMS +
+                " JOIN (SELECT film_id, COUNT(*) AS likes FROM Film_likes GROUP BY film_id) l ON f.film_id = l.film_id "
+                + " WHERE d.director_id = ? ORDER BY ?";
+        return withGenres(findMany(query, directorId, sortBy));
+    }
+
     // В колонку rating_id пишется id рейтинга, а не объект целиком; у фильма без рейтинга — NULL
     private Long mpaId(final Film film) {
         return film.getMpa() == null ? null : film.getMpa().getId();
+    }
+
+    private Long directorId(final Film film) {
+        return film.getDirector() == null ? null : film.getDirector().getId();
     }
 
     // Дубликаты отбрасываются по id: повторная строка (film_id, genre_id) нарушила бы первичный ключ
