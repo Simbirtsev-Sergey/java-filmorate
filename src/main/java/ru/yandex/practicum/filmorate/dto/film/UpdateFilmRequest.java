@@ -9,6 +9,7 @@ import lombok.AccessLevel;
 import lombok.Data;
 import lombok.experimental.FieldDefaults;
 import ru.yandex.practicum.filmorate.deserializer.DurationDeserializer;
+import ru.yandex.practicum.filmorate.dto.director.DirectorDto;
 import ru.yandex.practicum.filmorate.dto.genre.GenreDto;
 import ru.yandex.practicum.filmorate.dto.rating.RatingDto;
 import ru.yandex.practicum.filmorate.serializer.DurationSerializer;
@@ -36,6 +37,7 @@ public class UpdateFilmRequest {
     Duration duration;
     RatingDto mpa;
     Set<GenreDto> genres;
+    DirectorDto director;
 
     public boolean hasName() {
         return !(name == null || name.isBlank());
@@ -59,5 +61,9 @@ public class UpdateFilmRequest {
 
     public boolean hasGenres() {
         return genres != null;
+    }
+
+    public boolean hasDirector() {
+        return director != null;
     }
 }

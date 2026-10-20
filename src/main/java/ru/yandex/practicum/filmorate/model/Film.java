@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.model;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.experimental.FieldDefaults;
+import ru.yandex.practicum.filmorate.dto.director.DirectorDto;
 import ru.yandex.practicum.filmorate.dto.genre.GenreDto;
 import ru.yandex.practicum.filmorate.dto.rating.RatingDto;
 
@@ -21,4 +22,5 @@ public class Film {
     Duration duration;
     RatingDto mpa;
     Set<GenreDto> genres = new LinkedHashSet<>();
+    DirectorDto director;
 }

@@ -15,6 +15,7 @@ public final class FilmMapper {
         film.setDuration(request.getDuration());
         film.setMpa(request.getMpa());
         film.setGenres(request.getGenres());
+        film.setDirector(request.getDirector());
 
         return film;
     }
@@ -29,6 +30,7 @@ public final class FilmMapper {
         filmDto.setDuration(film.getDuration());
         filmDto.setMpa(film.getMpa());
         filmDto.setGenres(film.getGenres());
+        filmDto.setDirector(film.getDirector());
 
         return filmDto;
     }
@@ -51,6 +53,9 @@ public final class FilmMapper {
         }
         if (request.hasGenres()) {
             film.setGenres(request.getGenres());
+        }
+        if (request.hasDirector()) {
+            film.setDirector(request.getDirector());
         }
         return film;
     }

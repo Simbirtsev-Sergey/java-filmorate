@@ -7,6 +7,7 @@ import lombok.AccessLevel;
 import lombok.Data;
 import lombok.experimental.FieldDefaults;
 import ru.yandex.practicum.filmorate.deserializer.DurationDeserializer;
+import ru.yandex.practicum.filmorate.dto.director.DirectorDto;
 import ru.yandex.practicum.filmorate.dto.genre.GenreDto;
 import ru.yandex.practicum.filmorate.dto.rating.RatingDto;
 import ru.yandex.practicum.filmorate.serializer.DurationSerializer;
@@ -28,4 +29,5 @@ public class FilmDto {
     Duration duration;
     RatingDto mpa;
     Set<GenreDto> genres = new LinkedHashSet<>();
+    DirectorDto director;
 }
