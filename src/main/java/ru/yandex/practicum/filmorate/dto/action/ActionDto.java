@@ -19,14 +19,4 @@ public class ActionDto {
     String operation;
     String eventType;
     Long entityId;
-
-    public ActionDto(final Instant  timestamp, final Long userId, final String operation,
-                  final String eventType, final Long entityId
-    ) {
-        this.entityId = entityId;
-        this.eventType = eventType;
-        this.operation = operation;
-        this.userId = userId;
-        this.timestamp = timestamp;
-    }
 }
