@@ -56,11 +56,9 @@ public class ReviewService {
     }
 
     public void deleteReviewById(final Long id) {
-        if (!reviewStorage.delete(id)) {
-            throw new NotFoundException("Отзыва с id = " + id + " не существует");
-        }
-        actionStorage.createAction(actionStorage.create(getReviewById(id).getUserId(), 1L, 2L,
-                getReviewById(id).getReviewId()));
+        ReviewDto review = getReviewById(id);   // заодно бросит 404, если отзыва нет
+        reviewStorage.delete(id);
+        actionStorage.createAction(actionStorage.create(review.getUserId(), 1L, 2L, id));
     }
 
     public ReviewDto update(final UpdateReviewRequest request) {
