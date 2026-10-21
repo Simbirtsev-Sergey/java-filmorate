@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.dal.mappers;
 
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.dto.director.DirectorDto;
 import ru.yandex.practicum.filmorate.dto.rating.RatingDto;
 import ru.yandex.practicum.filmorate.model.Film;
 
@@ -31,16 +30,6 @@ public class FilmRowMapper implements RowMapper<Film> {
             rating.setId(ratingId);
             rating.setName(resultSet.getString("rating_name"));
             film.setMpa(rating);
-        }
-
-        Long directorId = resultSet.getObject("director_id", Long.class);
-        if (directorId != null) {
-            film.setDirector(
-                    DirectorDto.builder()
-                            .id(resultSet.getLong("director_id"))
-                            .name(resultSet.getString("director"))
-                            .build()
-            );
         }
 
         return film;

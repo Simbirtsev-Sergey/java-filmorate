@@ -16,6 +16,7 @@ import ru.yandex.practicum.filmorate.serializer.DurationSerializer;
 
 import java.time.Duration;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Set;
 
 @Data
@@ -37,7 +38,7 @@ public class UpdateFilmRequest {
     Duration duration;
     RatingDto mpa;
     Set<GenreDto> genres;
-    DirectorDto director;
+    List<DirectorDto> directors;
 
     public boolean hasName() {
         return !(name == null || name.isBlank());
@@ -63,7 +64,7 @@ public class UpdateFilmRequest {
         return genres != null;
     }
 
-    public boolean hasDirector() {
-        return director != null && director.getId() != null;
+    public boolean hasDirectors() {
+        return directors != null;
     }
 }

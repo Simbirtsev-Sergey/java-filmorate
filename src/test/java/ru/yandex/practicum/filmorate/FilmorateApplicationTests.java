@@ -249,8 +249,9 @@ class FilmorateApplicationTests {
 
     @Test
     public void testUpdateFilm() {
-        Film film = filmStorage.create(newFilm("Матрица", 1L, 1L));
-        Film newFilm = newFilm("Матрица: Перезагрузка", 3L, null, 4L, 3L);
+        DirectorDto director = directorStorage.addDirector("qwe");
+        Film film = filmStorage.create(newFilm("Матрица", 1L, null));
+        Film newFilm = newFilm("Матрица: Перезагрузка", 3L, List.of(director), 4L, 3L);
         newFilm.setId(film.getId());
         newFilm.setDescription("Новое описание");
         newFilm.setReleaseDate(LocalDate.of(2003, 5, 15));
@@ -267,12 +268,13 @@ class FilmorateApplicationTests {
                     assertThat(updated.getMpa().getId()).isEqualTo(3L);
                     // Старый жанр 1 должен исчезнуть: жанры при обновлении заменяются целиком
                     assertThat(updated.getGenres()).extracting(GenreDto::getId).containsExactly(3L, 4L);
+                    assertThat(updated.getDirectors()).extracting(DirectorDto::getId).contains(director.getId());
                 });
     }
 
     @Test
     public void testUpdateFilmRemovesGenres() {
-        Film film = filmStorage.create(newFilm("Матрица", 1L, 1L, 2L));
+        Film film = filmStorage.create(newFilm("Матрица", 1L, null, 1L, 2L));
         film.setGenres(new LinkedHashSet<>());
 
         filmStorage.update(film);
@@ -337,10 +339,10 @@ class FilmorateApplicationTests {
         DirectorDto director2 = directorStorage.addDirector("asd");
         DirectorDto director3 = directorStorage.addDirector("zxc");
 
-        Film oneLike = filmStorage.create(newFilm("Один лайк", 1L, director1.getId()));
-        Film threeLikes = filmStorage.create(newFilm("Три лайка", 1L, director2.getId()));
-        Film twoLikes = filmStorage.create(newFilm("Два лайка", 1L, director2.getId()));
-        Film noLikes = filmStorage.create(newFilm("Без лайков", 1L, director3.getId()));
+        Film oneLike = filmStorage.create(newFilm("Один лайк", 1L, List.of(director1)));
+        Film threeLikes = filmStorage.create(newFilm("Три лайка", 1L, List.of(director2)));
+        Film twoLikes = filmStorage.create(newFilm("Два лайка", 1L, List.of(director2)));
+        Film noLikes = filmStorage.create(newFilm("Без лайков", 1L, List.of(director3)));
 
         filmStorage.insertLike(oneLike.getId(), user1.getId());
         filmStorage.insertLike(threeLikes.getId(), user1.getId());
@@ -428,7 +430,7 @@ class FilmorateApplicationTests {
     }
 
     // mpaId может быть null — тогда фильм создаётся без рейтинга
-    private Film newFilm(String name, Long mpaId, Long directorId, Long... genreIds) {
+    private Film newFilm(String name, Long mpaId, List<DirectorDto> directors, Long... genreIds) {
         Film film = new Film();
         film.setName(name);
         film.setDescription("Описание");
@@ -449,13 +451,7 @@ class FilmorateApplicationTests {
         }
         film.setGenres(genres);
 
-        if (directorId != null) {
-            DirectorDto director = DirectorDto
-                    .builder()
-                    .id(directorId)
-                    .build();
-            film.setDirector(director);
-        }
+        film.setDirectors(directors);
 
         return film;
     }

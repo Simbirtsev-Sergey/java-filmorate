@@ -34,8 +34,13 @@ CREATE TABLE IF NOT EXISTS Films (
     description VARCHAR(200),
     release_date DATE NOT NULL,
     duration INTEGER,
-    rating_id BIGINT REFERENCES Ratings(rating_id),
-    director_id BIGINT REFERENCES Directors(director_id)
+    rating_id BIGINT REFERENCES Ratings(rating_id)
+);
+
+CREATE TABLE IF NOT EXISTS Film_directors (
+    film_id BIGINT REFERENCES Films(film_id) ON DELETE CASCADE,
+    director_id BIGINT REFERENCES Directors(director_id),
+    PRIMARY KEY (film_id, director_id)
 );
 
 CREATE TABLE IF NOT EXISTS Film_genres (

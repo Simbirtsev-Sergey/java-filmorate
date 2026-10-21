@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dto.director.DirectorDto;
 import ru.yandex.practicum.filmorate.dto.film.FilmDto;
 import ru.yandex.practicum.filmorate.dto.film.NewFilmRequest;
 import ru.yandex.practicum.filmorate.dto.film.UpdateFilmRequest;
@@ -60,6 +61,7 @@ public class FilmService {
         checkMpaAndGenresAndDirectorExist(film);
 
         film = filmDbStorage.create(film);
+
         // Перечитываем фильм из базы: так в ответе будут названия рейтинга и жанров, а жанры — по порядку id
         return getFilmById(film.getId());
     }
@@ -159,9 +161,12 @@ public class FilmService {
                 }
             }
         }
-        if (film.getDirector() != null && film.getDirector().getId() != null
-                && directorStorage.getDirectorById(film.getDirector().getId()).isEmpty()) {
-            throw new NotFoundException("Режиссера с id = " + film.getDirector().getId() + " не существует");
+        if (film.getDirectors() != null && !film.getDirectors().isEmpty()) {
+            for (DirectorDto director : film.getDirectors()) {
+                if (directorStorage.getDirectorById(director.getId()).isEmpty()) {
+                    throw new NotFoundException("режиссера с id = " + director.getId() + " не существует");
+                }
+            }
         }
     }
 

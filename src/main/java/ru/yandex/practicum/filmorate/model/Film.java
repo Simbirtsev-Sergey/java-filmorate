@@ -10,6 +10,7 @@ import ru.yandex.practicum.filmorate.dto.rating.RatingDto;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 
 @Data
@@ -22,5 +23,5 @@ public class Film {
     Duration duration;
     RatingDto mpa;
     Set<GenreDto> genres = new LinkedHashSet<>();
-    DirectorDto director;
+    List<DirectorDto> directors;
 }
