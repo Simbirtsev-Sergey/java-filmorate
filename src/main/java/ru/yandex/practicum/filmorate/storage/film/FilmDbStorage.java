@@ -140,7 +140,7 @@ public class FilmDbStorage extends BaseStorage<Film> implements FilmStorage {
         String query = SELECT_FILMS +
                 " LEFT JOIN (SELECT film_id, COUNT(*) AS likes FROM Film_likes GROUP BY film_id) l ON f.film_id = l.film_id "
                 + "LEFT JOIN Film_directors fd ON f.film_id = fd.film_id "
-                + "WHERE fd.director_id = ? ORDER BY " + sortBy + " DESC";
+                + "WHERE fd.director_id = ? ORDER BY " + sortBy;
         return withGenresAndDirectors(findMany(query, directorId));
     }
 
