@@ -184,7 +184,7 @@ public class FilmService {
 
     public Collection<FilmDto> getFilmsByDirector(Long directorId, String sortBy) {
         if (sortBy.equals("year")) sortBy = "f.release_date";
-        else if (sortBy.equals("likes DESC")) sortBy = "l.likes";
+        else if (sortBy.equals("likes")) sortBy = "l.likes DESC";
         else throw new ConditionsNotMetException("Параметр sortBy должен быть \"year\" или \"likes\"");
 
         return filmDbStorage.getByDirector(directorId, sortBy)
