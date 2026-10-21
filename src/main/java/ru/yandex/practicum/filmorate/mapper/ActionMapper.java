@@ -12,7 +12,7 @@ public class ActionMapper {
         actionDto.setUserId(action.getUserId());
         actionDto.setOperation(convertOperation(action.getOperationId()));
         actionDto.setEventType(convertEventType(action.getEventTypeId()));
-        actionDto.setEntityId(actionDto.getEntityId());
+        actionDto.setEntityId(action.getEntityId());
 
         return actionDto;
     }

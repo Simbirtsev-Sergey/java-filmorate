@@ -23,13 +23,16 @@ public class UserDbStorage extends BaseStorage<User> implements UserStorage {
             "application_id) VALUES(?, ?, ?)";
     private static final String DELETE_FRIENDSHIP_QUERY =
             "DELETE FROM Friendships WHERE sender_id = ? AND recipient_id = ?";
-    private static final String FIND_FRIENDSHIP_QUERY = "SELECT COUNT(*) FROM Friendships WHERE sender_id = ? AND " +
-            "recipient_id  = ?";
+    private static final String FIND_FRIENDSHIP_QUERY = "SELECT COUNT(*) " +
+            "FROM Friendships " +
+            "WHERE sender_id = ? AND recipient_id  = ?";
     private static final String FIND_FRIENDS_QUERY = "SELECT * FROM Users WHERE user_id IN " +
             "(SELECT recipient_id FROM Friendships WHERE sender_id = ?) ORDER BY user_id";
-    private static final String UPDATE_FRIENDSHIP_STATUS_QUERY =
-            "UPDATE Friendships SET application_id = ? WHERE sender_id = ? AND recipient_id = ?";
-    private static final String FIND_SIMILAR_USERS_QUERY = "SELECT other.user_id, COUNT(*) AS common_likes " +
+    private static final String UPDATE_FRIENDSHIP_STATUS_QUERY = "UPDATE Friendships " +
+            "SET application_id = ? " +
+            "WHERE sender_id = ? AND recipient_id = ?";
+    private static final String FIND_SIMILAR_USERS_QUERY =
+            "SELECT other.user_id, COUNT(*) AS common_likes " +
             "FROM Film_likes mine JOIN Film_likes other ON other.film_id = mine.film_id " +
             "WHERE mine.user_id = ? AND other.user_id <> ? " +
             "GROUP BY other.user_id " +

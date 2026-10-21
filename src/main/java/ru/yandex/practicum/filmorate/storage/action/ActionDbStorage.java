@@ -15,12 +15,13 @@ import java.util.Collection;
 @Primary
 public class ActionDbStorage extends BaseStorage<Action> implements ActionStorage {
     private static final String CREATE_EVENTS_QUERY = "INSERT INTO Events(timestamp, user_id, operation_id, " +
-            "event_type_id, entity_id)" +
+            "event_type_id, entity_id) " +
             "VALUES(?, ?, ?, ?, ?)";
     private static final String FIND_EVENTS_QUERY = "SELECT timestamp, user_id, event_type_id, operation_id, " +
             "event_id, entity_id " +
             "FROM Events " +
-            "WHERE user_id = ?";
+            "WHERE user_id = ? " +
+            "ORDER BY event_id";
 
     @Autowired
     public ActionDbStorage(JdbcTemplate jdbc, RowMapper<Action> mapper) {
@@ -49,7 +50,7 @@ public class ActionDbStorage extends BaseStorage<Action> implements ActionStorag
                          final Long operationId,
                          final Long eventTypeId,
                          final Long entityId) {
-        return new Action(Instant.now(),
+        return new Action(Instant.now().toEpochMilli(),
                 userId,
                 operationId,
                 eventTypeId,
