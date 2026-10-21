@@ -16,7 +16,7 @@ public class ActionRowMapper implements RowMapper<Action> {
         Action action = new Action();
 
         action.setEventId(resultSet.getLong("event_id"));
-        action.setTimestamp(resultSet.getLong("timestamp"));
+        action.setTimestamp(resultSet.getTimestamp("timestamp").toInstant());
         action.setUserId(resultSet.getLong("user_id"));
         action.setOperationId(resultSet.getLong("operation_id"));
         action.setEventTypeId(resultSet.getLong("event_type_id"));
