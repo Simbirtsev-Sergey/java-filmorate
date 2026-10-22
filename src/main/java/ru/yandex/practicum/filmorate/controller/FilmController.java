@@ -70,7 +70,7 @@ public class FilmController {
     }
 
     @GetMapping("/director/{directorId}")
-    public Collection<FilmDto> getFilmsByDirector(@PathVariable Long directorId, @RequestParam String sortBy) {
+    public Collection<FilmDto> getFilmsByDirector(@PathVariable @Positive Long directorId, @RequestParam String sortBy) {
         return filmService.getFilmsByDirector(directorId, sortBy);
     }
 }

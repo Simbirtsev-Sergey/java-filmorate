@@ -36,7 +36,7 @@ public class DirectorService {
         if (newDirector.getId() == null)
             throw new ConditionsNotMetException("Вы не передали id фильма");
         if (newDirector.getName() == null || newDirector.getName().isBlank())
-            throw new ConditionsNotMetException("Вы не передали название фильма");
+            throw new ConditionsNotMetException("Вы не передали имя режиссера");
         return directorStorage.updateDirector(newDirector);
     }
 
