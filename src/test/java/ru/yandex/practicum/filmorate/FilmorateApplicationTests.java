@@ -422,10 +422,10 @@ class FilmorateApplicationTests {
 
     @Test
     public void testSearchByParams() {
-        Film film1 = filmStorage.create(newFilm("Звёздные войны", 1L));
-        Film film2 = filmStorage.create(newFilm("Час пик", 1L));
-        Film film3 = filmStorage.create(newFilm("Миссия не выполнима", 1L));
-        Film film4 = filmStorage.create(newFilm("Крёстный отец", 1L));
+        Film film1 = filmStorage.create(newFilm("Звёздные войны", 1L, null));
+        Film film2 = filmStorage.create(newFilm("Час пик", 1L, null));
+        Film film3 = filmStorage.create(newFilm("Миссия не выполнима", 1L, null));
+        Film film4 = filmStorage.create(newFilm("Крёстный отец", 1L, null));
 
         assertThat(filmStorage.searchByParams("ны", List.of("title")))
                 .extracting(Film::getId)
