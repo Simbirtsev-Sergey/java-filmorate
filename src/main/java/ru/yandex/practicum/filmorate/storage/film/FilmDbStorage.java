@@ -166,16 +166,16 @@ public class FilmDbStorage extends BaseStorage<Film> implements FilmStorage {
                     "SELECT film_id from Film_directors fd JOIN Directors d ON fd.director_id = d.director_id " +
                     "WHERE d.name LIKE('%" + query + "%')" +
                     ") ORDER BY l.likes DESC";
-            return findMany(request);
+            return withGenresAndDirectors(findMany(request));
         } else if (by.contains("title")) {
             request = SEARCH_BY_PARAMS + "f.name LIKE('%" + query + "%') ORDER BY l.likes DESC";
-            return findMany(request);
+            return withGenresAndDirectors(findMany(request));
         } else if (by.contains("director")) {
             request = SEARCH_BY_PARAMS + "f.film_id IN(" +
                     "SELECT film_id from Film_directors fd JOIN Directors d ON fd.director_id = d.director_id " +
                     "WHERE d.name LIKE('%" + query + "%')" +
                     ") ORDER BY l.likes DESC";
-            return findMany(request);
+            return withGenresAndDirectors(findMany(request));
         } else throw new ConditionsNotMetException("Неверные параметры для \"by\"");
     }
 
