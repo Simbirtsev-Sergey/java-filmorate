@@ -152,17 +152,22 @@ public class FilmDbStorage extends BaseStorage<Film> implements FilmStorage {
     @Override
     public Collection<Film> searchByParams(String query, List<String> by) {
         String request;
-        //когда добавим режиссеров в фильмы надо будет раскомментировать
-        if /*(by.containsAll(List.of("title", "director"))) {
-            request = SEARCH_BY_PARAMS + "f.name LIKE('%" + query + "%') + " f.director LIKE('%"+query+"%') ORDER BY l.likes DESC";
+        if (by.containsAll(List.of("title", "director"))) {
+            request = SEARCH_BY_PARAMS + "f.name LIKE('%" + query + "%') OR f.film_id IN(" +
+                    "SELECT film_id from Film_director fd JOIN Directors d ON fd.director_id = d.director_id " +
+                    "WHERE d.name LIKE('%" + query + "%')" +
+                    ") ORDER BY l.likes DESC";
             return findMany(request);
-        } else if */ (by.contains("title")) {
+        } else if (by.contains("title")) {
             request = SEARCH_BY_PARAMS + "f.name LIKE('%" + query + "%') ORDER BY l.likes DESC";
             return findMany(request);
-        } /*else if (by.contains("director")) {
-            request = SEARCH_BY_PARAMS + "f.director LIKE('%" + query + "%') ORDER BY l.likes DESC";
+        } else if (by.contains("director")) {
+            request = SEARCH_BY_PARAMS + "f.film_id IN(" +
+                    "SELECT film_id from Film_director fd JOIN Directors d ON fd.director_id = d.director_id " +
+                    "WHERE d.name LIKE('%" + query + "%')" +
+                    ") ORDER BY l.likes DESC";
             return findMany(request);
-        }*/ else throw new ConditionsNotMetException("Неверные параметры для \"by\"");
+        } else throw new ConditionsNotMetException("Неверные параметры для \"by\"");
     }
 
     // В колонку rating_id пишется id рейтинга, а не объект целиком; у фильма без рейтинга — NULL
