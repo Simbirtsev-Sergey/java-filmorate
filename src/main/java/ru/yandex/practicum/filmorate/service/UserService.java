@@ -3,17 +3,27 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dto.action.ActionDto;
 import ru.yandex.practicum.filmorate.dto.film.FilmDto;
 import ru.yandex.practicum.filmorate.exception.ExcessiveActionException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.mapper.ActionMapper;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.action.ActionDbStorage;
+import ru.yandex.practicum.filmorate.storage.action.ActionStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserDbStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -21,23 +31,29 @@ import java.util.stream.Collectors;
 @Service
 public class UserService {
     private final UserStorage userDbStorage;
-
+    private final ActionStorage actionStorage;
     private final FilmStorage filmStorage;
 
     @Autowired
-    public UserService(final UserDbStorage userDbStorage, FilmStorage filmStorage) {
+    public UserService(final UserDbStorage userDbStorage, final FilmStorage filmStorage,
+                       final ActionDbStorage actionDbStorage) {
         this.userDbStorage = userDbStorage;
         this.filmStorage = filmStorage;
+        this.actionStorage = actionDbStorage;
     }
 
-    public UserService(final InMemoryUserStorage userStorage, FilmStorage filmStorage) {
+    public UserService(final InMemoryUserStorage userStorage, final FilmStorage filmStorage,
+                       final ActionStorage actionStorage) {
         this.userDbStorage = userStorage;
         this.filmStorage = filmStorage;
+        this.actionStorage = actionStorage;
     }
 
-    public UserService(final UserStorage userStorage, FilmStorage filmStorage) {
+    public UserService(final UserStorage userStorage, final FilmStorage filmStorage,
+                       final ActionStorage actionStorage) {
         this.userDbStorage = userStorage;
         this.filmStorage = filmStorage;
+        this.actionStorage = actionStorage;
     }
 
 
@@ -79,6 +95,7 @@ public class UserService {
             throw new ExcessiveActionException("Пользователь с id = " + friendId + " уже добавлен в друзья");
         }
         userDbStorage.addFriend(id, friendId);
+        actionStorage.createAction(actionStorage.create(id, 2L, 3L, friendId));
         log.debug("Друг с friendId = {} пользователя с id = {} успешно добавлен", friendId, id);
     }
 
@@ -90,6 +107,7 @@ public class UserService {
         log.debug("Проверка на существование пользователя с otherId = {} при удалении друга пройдена успешно", friendId);
 
         userDbStorage.deleteFriend(id, friendId);
+        actionStorage.createAction(actionStorage.create(id, 1L, 3L, friendId));
         log.debug("Друг с friendId = {} пользователя с id = {} успешно удален", friendId, id);
     }
 
@@ -133,6 +151,16 @@ public class UserService {
                 .collect(Collectors.toList());
     }
 
+    public Collection<ActionDto> activityFeed(final Long id) {
+        checkingUser(id);
+        log.debug("Проверка на существование пользователя с id = {} " +
+                "при получении последнего действия друга пройдена успешно", id);
+        return actionStorage.activityFeed(id)
+                .stream()
+                .map(ActionMapper::mapToActionDto)
+                .toList();
+    }
+
     private void checkingUser(final Long id) {
         if (userDbStorage.getUserById(id).isEmpty()) {
             throw new NotFoundException("Пользователя с id = " + id + " не существует");
@@ -142,7 +170,6 @@ public class UserService {
     private List<Long> findCommonFriends(List<User> list1, List<User> list2) {
         List<Long> q1 = list1.stream().map(User::getId).toList();
         List<Long> q2 = list2.stream().map(User::getId).toList();
-
 
         return q1.stream().filter(q2::contains).collect(Collectors.toList());
     }
