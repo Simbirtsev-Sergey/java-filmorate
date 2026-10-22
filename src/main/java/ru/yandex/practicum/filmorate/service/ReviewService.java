@@ -11,6 +11,7 @@ import ru.yandex.practicum.filmorate.exception.ExcessiveActionException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.mapper.ReviewMapper;
 import ru.yandex.practicum.filmorate.model.Review;
+import ru.yandex.practicum.filmorate.storage.action.ActionStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmDbStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.review.ReviewDbStorage;
@@ -26,13 +27,15 @@ public class ReviewService {
     private final ReviewStorage reviewStorage;
     private final UserStorage userStorage;
     private final FilmStorage filmStorage;
+    private final ActionStorage actionStorage;
 
     @Autowired
     public ReviewService(final ReviewDbStorage reviewStorage, final UserDbStorage userStorage,
-                         final FilmDbStorage filmStorage) {
+                         final FilmDbStorage filmStorage, final ActionStorage actionStorage) {
         this.reviewStorage = reviewStorage;
         this.userStorage = userStorage;
         this.filmStorage = filmStorage;
+        this.actionStorage = actionStorage;
     }
 
     public ReviewDto create(final NewReviewRequest newReviewRequest) {
@@ -42,6 +45,7 @@ public class ReviewService {
         Review review = ReviewMapper.mapToReview(newReviewRequest);
         review = reviewStorage.create(review);
 
+        actionStorage.createAction(actionStorage.create(newReviewRequest.getUserId(), 2L, 2L, review.getReviewId()));
         return ReviewMapper.mapToReviewDto(review);
     }
 
@@ -52,9 +56,9 @@ public class ReviewService {
     }
 
     public void deleteReviewById(final Long id) {
-        if (!reviewStorage.delete(id)) {
-            throw new NotFoundException("Отзыва с id = " + id + " не существует");
-        }
+        ReviewDto review = getReviewById(id);   // заодно бросит 404, если отзыва нет
+        reviewStorage.delete(id);
+        actionStorage.createAction(actionStorage.create(review.getUserId(), 1L, 2L, id));
     }
 
     public ReviewDto update(final UpdateReviewRequest request) {
@@ -67,7 +71,9 @@ public class ReviewService {
                 .orElseThrow(() -> new NotFoundException("Отзыв не найден"));
 
         updateReview = reviewStorage.update(updateReview);
-        return getReviewById(updateReview.getReviewId());
+        ReviewDto result = getReviewById(updateReview.getReviewId());
+        actionStorage.createAction(actionStorage.create(result.getUserId(), 3L, 2L, request.getReviewId()));
+        return result;
     }
 
     public Collection<ReviewDto> getReviewByIdFilms(final Long filmId, final Integer count) {
