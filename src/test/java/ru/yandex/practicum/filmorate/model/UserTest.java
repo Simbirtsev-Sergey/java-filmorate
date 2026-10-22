@@ -8,8 +8,6 @@ import ru.yandex.practicum.filmorate.controller.UserController;
 import ru.yandex.practicum.filmorate.exception.ConditionsNotMetException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.service.UserService;
-import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.film.InMemoryFilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
@@ -17,7 +15,11 @@ import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class UserTest {
     private static Validator validator;
@@ -86,9 +88,7 @@ public class UserTest {
 
         UserStorage userStorage = new InMemoryUserStorage();
 
-        FilmStorage filmStorage = new InMemoryFilmStorage();
-
-        UserService userService = new UserService(userStorage, filmStorage);
+        UserService userService = new UserService(userStorage, null, null);
 
         UserController controller = new UserController(userService);
 
@@ -108,9 +108,7 @@ public class UserTest {
 
         UserStorage userStorage = new InMemoryUserStorage();
 
-        FilmStorage filmStorage = new InMemoryFilmStorage();
-
-        UserService userService = new UserService(userStorage, filmStorage);
+        UserService userService = new UserService(userStorage, null, null);
 
         UserController controller = new UserController(userService);
 
@@ -137,9 +135,7 @@ public class UserTest {
 
         UserStorage userStorage = new InMemoryUserStorage();
 
-        FilmStorage filmStorage = new InMemoryFilmStorage();
-
-        UserService userService = new UserService(userStorage, filmStorage);
+        UserService userService = new UserService(userStorage, null, null);
 
         UserController controller = new UserController(userService);
 
@@ -159,9 +155,7 @@ public class UserTest {
     void getUsersReturnsNoCreatedUser() {
         UserStorage userStorage = new InMemoryUserStorage();
 
-        FilmStorage filmStorage = new InMemoryFilmStorage();
-
-        UserService userService = new UserService(userStorage, filmStorage);
+        UserService userService = new UserService(userStorage, null, null);
 
         UserController controller = new UserController(userService);
 
@@ -183,9 +177,7 @@ public class UserTest {
 
         UserStorage userStorage = new InMemoryUserStorage();
 
-        FilmStorage filmStorage = new InMemoryFilmStorage();
-
-        UserService userService = new UserService(userStorage, filmStorage);
+        UserService userService = new UserService(userStorage, null, null);
 
         UserController controller = new UserController(userService);
 
@@ -217,9 +209,7 @@ public class UserTest {
 
         UserStorage userStorage = new InMemoryUserStorage();
 
-        FilmStorage filmStorage = new InMemoryFilmStorage();
-
-        UserService userService = new UserService(userStorage, filmStorage);
+        UserService userService = new UserService(userStorage, null, null);
 
         UserController controller = new UserController(userService);
 
@@ -243,9 +233,7 @@ public class UserTest {
 
         UserStorage userStorage = new InMemoryUserStorage();
 
-        FilmStorage filmStorage = new InMemoryFilmStorage();
-
-        UserService userService = new UserService(userStorage, filmStorage);
+        UserService userService = new UserService(userStorage, null, null);
 
         UserController controller = new UserController(userService);
 
