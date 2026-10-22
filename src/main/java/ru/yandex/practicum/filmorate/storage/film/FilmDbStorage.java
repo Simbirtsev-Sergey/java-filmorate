@@ -163,7 +163,7 @@ public class FilmDbStorage extends BaseStorage<Film> implements FilmStorage {
         String request;
         if (by.containsAll(List.of("title", "director"))) {
             request = SEARCH_BY_PARAMS + "f.name LIKE('%" + query + "%') OR f.film_id IN(" +
-                    "SELECT film_id from Film_director fd JOIN Directors d ON fd.director_id = d.director_id " +
+                    "SELECT film_id from Film_directors fd JOIN Directors d ON fd.director_id = d.director_id " +
                     "WHERE d.name LIKE('%" + query + "%')" +
                     ") ORDER BY l.likes DESC";
             return findMany(request);
@@ -172,7 +172,7 @@ public class FilmDbStorage extends BaseStorage<Film> implements FilmStorage {
             return findMany(request);
         } else if (by.contains("director")) {
             request = SEARCH_BY_PARAMS + "f.film_id IN(" +
-                    "SELECT film_id from Film_director fd JOIN Directors d ON fd.director_id = d.director_id " +
+                    "SELECT film_id from Film_directors fd JOIN Directors d ON fd.director_id = d.director_id " +
                     "WHERE d.name LIKE('%" + query + "%')" +
                     ") ORDER BY l.likes DESC";
             return findMany(request);
