@@ -32,6 +32,7 @@ public class FilmService {
     private final GenreStorage genreStorage;
     private final RatingStorage ratingStorage;
     private final DirectorStorage directorStorage;
+    private final ActionStorage actionStorage;
 
     @Autowired
     public FilmService(final FilmStorage filmDbStorage, final UserStorage userDbStorage,

@@ -172,7 +172,7 @@ public class FilmTest {
 
     // Хранилища жанров и рейтингов здесь не нужны: фильмы в этих тестах создаются без жанров и рейтинга
     private FilmController createController() {
-        FilmService filmService = new FilmService(new InMemoryFilmStorage(), new InMemoryUserStorage(), null, null, null);
+        FilmService filmService = new FilmService(new InMemoryFilmStorage(), new InMemoryUserStorage(), null, null, null, null);
         return new FilmController(filmService);
     }
 
