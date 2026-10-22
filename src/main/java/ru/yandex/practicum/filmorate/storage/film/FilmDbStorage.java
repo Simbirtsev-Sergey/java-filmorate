@@ -55,6 +55,16 @@ public class FilmDbStorage extends BaseStorage<Film> implements FilmStorage {
     private static final String SEARCH_BY_PARAMS = "SELECT f.*, r.name AS rating_name FROM Films f " +
             "LEFT JOIN (SELECT film_id, COUNT(*) AS likes FROM Film_likes GROUP BY film_id) l ON f.film_id = l.film_id " +
             "LEFT JOIN Ratings r ON f.rating_id = r.rating_id WHERE ";
+    private static final String POPULAR_BY_GENRE_QUERY = "SELECT f.*, r.name AS rating_name FROM Films f " +
+            "LEFT JOIN (SELECT film_id, COUNT(*) AS likes FROM Film_likes GROUP BY film_id) l " +
+            "       ON l.film_id = f.film_id " +
+            "LEFT JOIN Ratings r ON f.rating_id = r.rating_id " +
+            "WHERE (? IS NULL OR EXISTS (" +
+            "        SELECT 1 FROM Film_genres fg " +
+            "        WHERE fg.film_id = f.film_id AND fg.genre_id = ?)) " +
+            "  AND (? IS NULL OR YEAR(f.release_date) = ?) " +
+            "ORDER BY COALESCE(l.likes, 0) DESC, f.film_id " +
+            "LIMIT ?";
 
     @Autowired
     public FilmDbStorage(final JdbcTemplate jdbc, final RowMapper<Film> mapper) {
@@ -167,6 +177,11 @@ public class FilmDbStorage extends BaseStorage<Film> implements FilmStorage {
                     ") ORDER BY l.likes DESC";
             return findMany(request);
         } else throw new ConditionsNotMetException("Неверные параметры для \"by\"");
+    }
+
+    @Override
+    public Collection<Film> popularByGenre(int count, Long genreId, Integer year) {
+        return withGenresAndDirectors(findMany(POPULAR_BY_GENRE_QUERY, genreId, genreId, year, year, count));
     }
 
     // В колонку rating_id пишется id рейтинга, а не объект целиком; у фильма без рейтинга — NULL
