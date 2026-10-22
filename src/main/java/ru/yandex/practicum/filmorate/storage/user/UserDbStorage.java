@@ -8,9 +8,7 @@ import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.BaseStorage;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Repository
 @Primary
@@ -31,6 +29,20 @@ public class UserDbStorage extends BaseStorage<User> implements UserStorage {
             "(SELECT recipient_id FROM Friendships WHERE sender_id = ?) ORDER BY user_id";
     private static final String UPDATE_FRIENDSHIP_STATUS_QUERY =
             "UPDATE Friendships SET application_id = ? WHERE sender_id = ? AND recipient_id = ?";
+    private static final String FIND_SIMILAR_USERS_QUERY = "SELECT other.user_id, COUNT(*) AS common_likes " +
+            "FROM Film_likes mine JOIN Film_likes other ON other.film_id = mine.film_id " +
+            "WHERE mine.user_id = ? AND other.user_id <> ? " +
+            "GROUP BY other.user_id " +
+            "ORDER BY common_likes DESC";
+    private static final String FIND_RECOMMENDED_FILM_QUERY = "SELECT peer.film_id FROM Film_likes peer " +
+            "WHERE peer.user_id = ? AND " +
+            "NOT EXISTS (SELECT 1 " +
+            "FROM Film_likes mine " +
+            "WHERE mine.user_id = ? AND mine.film_id = peer.film_id) " +
+            "ORDER BY peer.film_id";
+
+    private record UserSimilarity(Long userId, int commonLikes) {
+    }
 
     @Autowired
     public UserDbStorage(final JdbcTemplate jdbc, final RowMapper<User> mapper) {
@@ -67,6 +79,12 @@ public class UserDbStorage extends BaseStorage<User> implements UserStorage {
     }
 
     @Override
+    public void delete(Long userId) {
+        String sql = "DELETE FROM Users WHERE user_id = ?";
+        jdbc.update(sql, userId);
+    }
+
+    @Override
     public Optional<User> getUserById(Long userId) {
         return findOne(FIND_USER_BY_ID_QUERY, userId);
     }
@@ -96,5 +114,44 @@ public class UserDbStorage extends BaseStorage<User> implements UserStorage {
     @Override
     public List<User> findFriends(final Long id) {
         return findMany(FIND_FRIENDS_QUERY, id);
+    }
+
+    @Override
+    public Collection<Long> getRecommendations(Long id) {
+        List<UserSimilarity> similarities = jdbc.query(
+                FIND_SIMILAR_USERS_QUERY,
+                (rs, rowNum) -> new UserSimilarity(
+                        rs.getLong("user_id"),
+                        rs.getInt("common_likes")
+                ),
+                id,
+                id
+        );
+
+        if (similarities.isEmpty()) {
+            return List.of();
+        }
+
+        int maxCommonLikes = similarities.get(0).commonLikes();
+
+        List<Long> similarUserIds = similarities.stream()
+                .filter(user -> user.commonLikes() == maxCommonLikes)
+                .map(UserSimilarity::userId)
+                .toList();
+
+        Set<Long> filmIds = new LinkedHashSet<>();
+
+        for (Long similarUserId : similarUserIds) {
+            List<Long> recommendations = jdbc.query(
+                    FIND_RECOMMENDED_FILM_QUERY,
+                    (rs, rowNum) -> rs.getLong("film_id"),
+                    similarUserId,
+                    id
+            );
+
+            filmIds.addAll(recommendations);
+        }
+
+        return new ArrayList<>(filmIds);
     }
 }

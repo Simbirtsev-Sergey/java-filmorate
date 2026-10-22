@@ -56,6 +56,16 @@ public class InMemoryUserStorage implements UserStorage {
         throw new NotFoundException(String.format("Пользователь с id = " + newUser.getId() + " не найден"));
     }
 
+    @Override
+    public void delete(Long userId) {
+        if (users.containsKey(userId)) {
+            users.remove(userId);
+            log.info("Пользователь с id {} удалён", userId);
+        }
+        log.debug("Пользователь с id {} не был найден", userId);
+        throw new NotFoundException(String.format("Пользователь с id = " + userId + " не найден"));
+    }
+
     private Long getNextId() {
         return users.values()
                 .stream()
@@ -92,6 +102,11 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public List<User> findFriends(final Long id) {
+        return List.of();
+    }
+
+    @Override
+    public Collection<Long> getRecommendations(Long id) {
         return List.of();
     }
 }

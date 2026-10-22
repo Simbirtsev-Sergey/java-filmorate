@@ -15,6 +15,8 @@ public interface FilmStorage {
 
     Film update(@Valid @RequestBody final Film newFilm);
 
+    void delete(final Long filmId);
+
     Optional<Film> getFilmById(final Long filmId);
 
     boolean existsUserAndFilm(final Long filmId, final Long userId);
@@ -26,4 +28,8 @@ public interface FilmStorage {
     List<Film> topFilmsByLikes(final int count);
 
     Collection<Film> searchByParams(String query, List<String> by);
+
+    Collection<Film> getByDirector(final Long directorId, String sortBy);
+
+    Collection<Film> getCommon(Long userId, Long friendId);
 }

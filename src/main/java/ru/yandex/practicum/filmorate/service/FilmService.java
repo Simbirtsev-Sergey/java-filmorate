@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dto.director.DirectorDto;
 import ru.yandex.practicum.filmorate.dto.film.FilmDto;
 import ru.yandex.practicum.filmorate.dto.film.NewFilmRequest;
 import ru.yandex.practicum.filmorate.dto.film.UpdateFilmRequest;
@@ -12,6 +13,7 @@ import ru.yandex.practicum.filmorate.exception.*;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.Director.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.rating.RatingStorage;
@@ -19,7 +21,7 @@ import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.time.Duration;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.Collection;
 
 @Slf4j
 @Service
@@ -28,14 +30,16 @@ public class FilmService {
     private final UserStorage userDbStorage;
     private final GenreStorage genreStorage;
     private final RatingStorage ratingStorage;
+    private final DirectorStorage directorStorage;
 
     @Autowired
     public FilmService(final FilmStorage filmDbStorage, final UserStorage userDbStorage,
-                       final GenreStorage genreStorage, final RatingStorage ratingStorage) {
+                       final GenreStorage genreStorage, final RatingStorage ratingStorage, DirectorStorage directorStorage) {
         this.filmDbStorage = filmDbStorage;
         this.userDbStorage = userDbStorage;
         this.genreStorage = genreStorage;
         this.ratingStorage = ratingStorage;
+        this.directorStorage = directorStorage;
     }
 
     public Collection<FilmDto> getFilms() {
@@ -54,7 +58,7 @@ public class FilmService {
         validationDuration(request.getDuration());
 
         Film film = FilmMapper.mapToFilm(request);
-        checkMpaAndGenresExist(film);
+        checkMpaAndGenresAndDirectorExist(film);
 
         film = filmDbStorage.create(film);
 
@@ -71,9 +75,17 @@ public class FilmService {
         Film updatedFilm = filmDbStorage.getFilmById(request.getId())
                 .map(film -> FilmMapper.updateFilmFields(film, request))
                 .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
-        checkMpaAndGenresExist(updatedFilm);
+        checkMpaAndGenresAndDirectorExist(updatedFilm);
         updatedFilm = filmDbStorage.update(updatedFilm);
         return getFilmById(updatedFilm.getId());
+    }
+
+    public void deleteById(final Long filmId) {
+        if (filmDbStorage.getFilmById(filmId).isEmpty()) {
+            throw new NotFoundException("Переданного фильма не существует");
+        } else {
+            filmDbStorage.delete(filmId);
+        }
     }
 
     // Добавление лайка
@@ -115,6 +127,15 @@ public class FilmService {
                 .toList();
     }
 
+    public Collection<FilmDto> getCommon(Long userId, Long friendId) {
+        checkUserExists(userId);
+        checkUserExists(friendId);
+        return filmDbStorage.getCommon(userId, friendId)
+                .stream()
+                .map(FilmMapper::mapToFilmDto)
+                .toList();
+    }
+
     private void checkUserExists(final Long userId) {
         if (userDbStorage.getUsers().stream().mapToLong(User::getId).noneMatch(id -> id == userId)) {
             throw new NotFoundException("Пользователя с id = " + userId + " не существует");
@@ -128,7 +149,7 @@ public class FilmService {
     }
 
     // Без этой проверки несуществующий рейтинг или жанр дойдёт до базы, нарушит внешний ключ и вернёт 500
-    private void checkMpaAndGenresExist(final Film film) {
+    private void checkMpaAndGenresAndDirectorExist(final Film film) {
         if (film.getMpa() != null && film.getMpa().getId() != null
                 && ratingStorage.getRatingById(film.getMpa().getId()).isEmpty()) {
             throw new NotFoundException("Рейтинга с id = " + film.getMpa().getId() + " не существует");
@@ -137,6 +158,13 @@ public class FilmService {
             for (GenreDto genre : film.getGenres()) {
                 if (genreStorage.getGenreById(genre.getId()).isEmpty()) {
                     throw new NotFoundException("Жанра с id = " + genre.getId() + " не существует");
+                }
+            }
+        }
+        if (film.getDirectors() != null && !film.getDirectors().isEmpty()) {
+            for (DirectorDto director : film.getDirectors()) {
+                if (directorStorage.getDirectorById(director.getId()).isEmpty()) {
+                    throw new NotFoundException("режиссера с id = " + director.getId() + " не существует");
                 }
             }
         }
@@ -152,6 +180,17 @@ public class FilmService {
         if (!duration.isPositive()) {
             throw new ValidationException("Продолжительность фильма должна быть положительным числом");
         }
+    }
+
+    public Collection<FilmDto> getFilmsByDirector(Long directorId, String sortBy) {
+        if (sortBy.equals("year")) sortBy = "f.release_date";
+        else if (sortBy.equals("likes")) sortBy = "l.likes DESC";
+        else throw new ConditionsNotMetException("Параметр sortBy должен быть \"year\" или \"likes\"");
+
+        return filmDbStorage.getByDirector(directorId, sortBy)
+                .stream()
+                .map(FilmMapper::mapToFilmDto)
+                .toList();
     }
 
     public Collection<FilmDto> searchByDirectorAndName(String query, List<String> by) {

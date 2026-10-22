@@ -19,6 +19,11 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
+    public Collection<Film> getByDirector(Long directorId, String sortBy) {
+        return List.of();
+    }
+
+    @Override
     public Film create(final Film film) {
         long nextId = getNextId();
         film.setId(nextId);
@@ -53,6 +58,12 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
+    public void delete(Long filmId) {
+        films.remove(filmId);
+        log.info("Фильм успешно удалён");
+    }
+
+    @Override
     public Optional<Film> getFilmById(final Long filmId) {
         return Optional.ofNullable(films.get(filmId));
     }
@@ -77,6 +88,11 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public List<Film> topFilmsByLikes(final int count) {
+        return List.of();
+    }
+
+    @Override
+    public Collection<Film> getCommon(Long userId, Long friendId) {
         return List.of();
     }
 

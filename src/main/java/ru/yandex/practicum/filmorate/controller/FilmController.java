@@ -50,6 +50,11 @@ public class FilmController {
         filmService.addLike(id, userId);
     }
 
+    @DeleteMapping("/{filmId}")
+    public void deleteFilm(@PathVariable final Long filmId) {
+        filmService.deleteById(filmId);
+    }
+
     @DeleteMapping(uri)
     public void userDeleteLikesMovie(@PathVariable final Long id, @PathVariable final Long userId) {
         filmService.deleteLike(id, userId);
@@ -63,5 +68,15 @@ public class FilmController {
     @GetMapping("/search")
     public Collection<FilmDto> searchByDirectorAndName(@RequestParam String query, @RequestParam List<String> by) {
         return filmService.searchByDirectorAndName(query, by);
+    }
+
+    @GetMapping("/common")
+    public Collection<FilmDto> getCommon(@RequestParam Long userId, @RequestParam Long friendId) {
+        return filmService.getCommon(userId, friendId);
+    }
+
+    @GetMapping("/director/{directorId}")
+    public Collection<FilmDto> getFilmsByDirector(@PathVariable @Positive Long directorId, @RequestParam String sortBy) {
+        return filmService.getFilmsByDirector(directorId, sortBy);
     }
 }

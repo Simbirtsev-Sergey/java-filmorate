@@ -5,10 +5,12 @@ import jakarta.validation.constraints.Positive;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.dto.film.FilmDto;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
 import java.util.Collection;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/users")
@@ -20,6 +22,11 @@ public class UserController {
     @Autowired
     public UserController(final UserService userService) {
         this.userService = userService;
+    }
+
+    @GetMapping("/{userId}")
+    public Optional<User> getUserById(@PathVariable final Long userId) {
+        return userService.getUserById(userId);
     }
 
     @GetMapping
@@ -42,6 +49,11 @@ public class UserController {
         userService.addFriend(id, friendsId);
     }
 
+    @DeleteMapping("/{userId}")
+    public void delete(@PathVariable final Long userId) {
+        userService.delete(userId);
+    }
+
     @DeleteMapping(uri)
     public void deleteFriend(@Positive @PathVariable final Long id, @Positive @PathVariable final Long friendsId) {
         userService.deleteFriend(id, friendsId);
@@ -56,5 +68,10 @@ public class UserController {
     public Collection<User> mutualFriends(@PathVariable @Positive final Long id,
                                           @PathVariable @Positive final Long otherId) {
         return userService.mutualFriends(id, otherId);
+    }
+
+    @GetMapping("/{id}/recommendations")
+    public Collection<FilmDto> getRecommendations(@Positive @PathVariable final Long id) {
+        return userService.getRecommendations(id);
     }
 }
