@@ -28,4 +28,6 @@ public interface FilmStorage {
     List<Film> topFilmsByLikes(final int count);
 
     Collection<Film> getCommon(Long userId, Long friendId);
+
+    Collection<Film> popularByGenre(int count, Long genreId, Integer year);
 }
