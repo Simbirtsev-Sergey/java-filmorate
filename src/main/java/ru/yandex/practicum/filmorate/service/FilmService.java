@@ -23,6 +23,7 @@ import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.util.Collection;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -201,6 +202,20 @@ public class FilmService {
         else throw new ConditionsNotMetException("Параметр sortBy должен быть \"year\" или \"likes\"");
 
         return filmDbStorage.getByDirector(directorId, sortBy)
+                .stream()
+                .map(FilmMapper::mapToFilmDto)
+                .toList();
+    }
+
+    public Collection<FilmDto> searchByDirectorAndName(String query, List<String> by) {
+        if (query.isBlank())
+            return getFilms();
+
+        if (by.isEmpty() || (!by.contains("director") && !by.contains("title"))) {
+            throw new ConditionsNotMetException("Параметр \"By\" должен содержать хотя бы 1 из 2 параметров: director, title");
+        }
+
+        return filmDbStorage.searchByParams(query, by)
                 .stream()
                 .map(FilmMapper::mapToFilmDto)
                 .toList();

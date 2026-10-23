@@ -8,6 +8,7 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dto.director.DirectorDto;
 import ru.yandex.practicum.filmorate.dto.genre.GenreDto;
+import ru.yandex.practicum.filmorate.exception.ConditionsNotMetException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.BaseStorage;
 
@@ -51,6 +52,9 @@ public class FilmDbStorage extends BaseStorage<Film> implements FilmStorage {
             "WHERE f.film_id IN (SELECT film_id FROM Film_likes WHERE user_id = ?) " +
             "AND f.film_id IN (SELECT film_id FROM Film_likes WHERE user_id = ?) " +
             "ORDER BY l.likes DESC, f.film_id";
+    private static final String SEARCH_BY_PARAMS = "SELECT f.*, r.name AS rating_name FROM Films f " +
+            "LEFT JOIN (SELECT film_id, COUNT(*) AS likes FROM Film_likes GROUP BY film_id) l ON f.film_id = l.film_id " +
+            "LEFT JOIN Ratings r ON f.rating_id = r.rating_id WHERE ";
     private static final String POPULAR_BY_GENRE_QUERY = "SELECT f.*, r.name AS rating_name FROM Films f " +
             "LEFT JOIN (SELECT film_id, COUNT(*) AS likes FROM Film_likes GROUP BY film_id) l " +
             "       ON l.film_id = f.film_id " +
@@ -152,6 +156,27 @@ public class FilmDbStorage extends BaseStorage<Film> implements FilmStorage {
                 + "LEFT JOIN Film_directors fd ON f.film_id = fd.film_id "
                 + "WHERE fd.director_id = ? ORDER BY " + sortBy;
         return withGenresAndDirectors(findMany(query, directorId));
+    }
+
+    @Override
+    public Collection<Film> searchByParams(String query, List<String> by) {
+        String request;
+        if (by.containsAll(List.of("title", "director"))) {
+            request = SEARCH_BY_PARAMS + "f.name LIKE('%" + query + "%') OR f.film_id IN(" +
+                    "SELECT film_id from Film_directors fd JOIN Directors d ON fd.director_id = d.director_id " +
+                    "WHERE d.name LIKE('%" + query + "%')" +
+                    ") ORDER BY l.likes DESC";
+            return withGenresAndDirectors(findMany(request));
+        } else if (by.contains("title")) {
+            request = SEARCH_BY_PARAMS + "f.name LIKE('%" + query + "%') ORDER BY l.likes DESC";
+            return withGenresAndDirectors(findMany(request));
+        } else if (by.contains("director")) {
+            request = SEARCH_BY_PARAMS + "f.film_id IN(" +
+                    "SELECT film_id from Film_directors fd JOIN Directors d ON fd.director_id = d.director_id " +
+                    "WHERE d.name LIKE('%" + query + "%')" +
+                    ") ORDER BY l.likes DESC";
+            return withGenresAndDirectors(findMany(request));
+        } else throw new ConditionsNotMetException("Неверные параметры для \"by\"");
     }
 
     @Override

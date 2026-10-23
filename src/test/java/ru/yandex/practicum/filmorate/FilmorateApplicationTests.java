@@ -420,6 +420,22 @@ class FilmorateApplicationTests {
         assertThat(directorStorage.getDirectorById(director.getId()).isEmpty());
     }
 
+    @Test
+    public void testSearchByParams() {
+        Film film1 = filmStorage.create(newFilm("Звёздные войны", 1L, null));
+        Film film2 = filmStorage.create(newFilm("Час пик", 1L, null));
+        Film film3 = filmStorage.create(newFilm("Миссия не выполнима", 1L, null));
+        Film film4 = filmStorage.create(newFilm("Крёстный отец", 1L, null));
+
+        assertThat(filmStorage.searchByParams("ны", List.of("title")))
+                .extracting(Film::getId)
+                .containsSubsequence(film1.getId(), film4.getId())
+                .doesNotContain(film2.getId(), film3.getId());
+        assertThat(filmStorage.topFilmsByLikes(1)).hasSize(1);
+
+        //добавить тесты для режиссёров
+    }
+
     private User newUser(String login) {
         User user = new User();
         user.setEmail(login + "@mail.ru");
