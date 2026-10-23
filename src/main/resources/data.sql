@@ -17,6 +17,13 @@ VALUES (1, 'G'),
        (4, 'R'),
        (5, 'NC-17');
 
+MERGE INTO Directors(director_id, name) KEY (director_id)
+VALUES (1, 'Кристофер Нолан'),
+       (2, 'Квентин Тарантино'),
+       (3, 'Хаяо Миядзаки'),
+       (4, 'Стэнли Кубрик'),
+       (5, 'Питер Джексон');
+
 MERGE INTO Users(user_id, email, login, name, birthday) KEY (user_id)
 VALUES (1, 'cerga@mail.ru', 'cerega', 'Сергей', '2005-11-05'),
        (2, 'ivan@mail.ru', 'ivan', 'Иван', '2006-04-12'),
@@ -31,6 +38,15 @@ VALUES (1, 'Колобок', 'Замес года', '2024-03-15', 130, 3),
        (3, 'Матрица', 'Единички нолики', '1999-03-31', 160, 2),
        (4, 'Последний богатырь', 'Посланник тьмы', '2021-12-23', 134, 5),
        (5, 'Человек паук', 'Возвращение домой', '2017-07-06', 140, 4);
+
+MERGE INTO Film_directors(film_id, director_id) KEY (film_id, director_id)
+VALUES (1, 1),
+       (2, 2),
+       (2, 4),
+       (3, 3),
+       (4, 1),
+       (4, 4),
+       (5, 1);
 
 MERGE INTO Film_genres(film_id, genre_id) KEY (film_id, genre_id)
 VALUES (1, 1),
@@ -74,3 +90,4 @@ MERGE INTO Event_types(event_type_id, name) KEY(event_type_id)
 
 ALTER TABLE Users ALTER COLUMN user_id RESTART WITH (SELECT COALESCE(MAX(user_id), 0) + 1 FROM Users);
 ALTER TABLE Films ALTER COLUMN film_id RESTART WITH (SELECT COALESCE(MAX(film_id), 0) + 1 FROM Films);
+ALTER TABLE Directors ALTER COLUMN director_id RESTART WITH (SELECT COALESCE(MAX(director_id),0) + 1 FROM Directors);
