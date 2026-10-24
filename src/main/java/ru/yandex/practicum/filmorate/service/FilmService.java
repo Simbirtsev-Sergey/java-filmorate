@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dto.director.DirectorDto;
 import ru.yandex.practicum.filmorate.dto.film.FilmDto;
 import ru.yandex.practicum.filmorate.dto.film.NewFilmRequest;
 import ru.yandex.practicum.filmorate.dto.film.UpdateFilmRequest;
@@ -12,6 +13,8 @@ import ru.yandex.practicum.filmorate.exception.*;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.Director.DirectorStorage;
+import ru.yandex.practicum.filmorate.storage.action.ActionStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.rating.RatingStorage;
@@ -19,7 +22,8 @@ import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.time.Duration;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -28,14 +32,19 @@ public class FilmService {
     private final UserStorage userDbStorage;
     private final GenreStorage genreStorage;
     private final RatingStorage ratingStorage;
+    private final DirectorStorage directorStorage;
+    private final ActionStorage actionStorage;
 
     @Autowired
     public FilmService(final FilmStorage filmDbStorage, final UserStorage userDbStorage,
-                       final GenreStorage genreStorage, final RatingStorage ratingStorage) {
+                       final GenreStorage genreStorage, final RatingStorage ratingStorage,
+                       final DirectorStorage directorStorage, final ActionStorage actionStorage) {
         this.filmDbStorage = filmDbStorage;
         this.userDbStorage = userDbStorage;
         this.genreStorage = genreStorage;
         this.ratingStorage = ratingStorage;
+        this.directorStorage = directorStorage;
+        this.actionStorage = actionStorage;
     }
 
     public Collection<FilmDto> getFilms() {
@@ -54,7 +63,7 @@ public class FilmService {
         validationDuration(request.getDuration());
 
         Film film = FilmMapper.mapToFilm(request);
-        checkMpaAndGenresExist(film);
+        checkMpaAndGenresAndDirectorExist(film);
 
         film = filmDbStorage.create(film);
 
@@ -71,9 +80,17 @@ public class FilmService {
         Film updatedFilm = filmDbStorage.getFilmById(request.getId())
                 .map(film -> FilmMapper.updateFilmFields(film, request))
                 .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
-        checkMpaAndGenresExist(updatedFilm);
+        checkMpaAndGenresAndDirectorExist(updatedFilm);
         updatedFilm = filmDbStorage.update(updatedFilm);
         return getFilmById(updatedFilm.getId());
+    }
+
+    public void deleteById(final Long filmId) {
+        if (filmDbStorage.getFilmById(filmId).isEmpty()) {
+            throw new NotFoundException("Переданного фильма не существует");
+        } else {
+            filmDbStorage.delete(filmId);
+        }
     }
 
     // Добавление лайка
@@ -84,13 +101,14 @@ public class FilmService {
             throw new NotFoundException("Переданного фильма не существует");
         }
 
+        // Повторный лайк не ошибка: вторую строку в базу не пишем, но событие в ленту попадает каждый раз
         if (filmDbStorage.existsUserAndFilm(filmId, userId)) {
             log.debug("Лайк от пользователя с id = {} уже добавлен", userId);
-            throw new ExcessiveActionException("Лайк от пользователя с id = " + userId + " уже добавлен");
         } else {
-            log.debug("Лайк от пользователя с id = {} успешно добавлен", userId);
             filmDbStorage.insertLike(filmId, userId);
+            log.debug("Лайк от пользователя с id = {} успешно добавлен", userId);
         }
+        actionStorage.createAction(actionStorage.create(userId, 2L, 1L, filmId));
     }
 
     // Удаление лайка
@@ -101,6 +119,7 @@ public class FilmService {
         if (filmDbStorage.existsUserAndFilm(filmId, userId)) {
             filmDbStorage.deleteLike(filmId, userId);
             log.debug("Лайк от пользователя с id = {} успешно удален", userId);
+            actionStorage.createAction(actionStorage.create(userId, 1L, 1L, filmId));
         } else {
             log.debug("Лайк от пользователя с id = {} уже удален или его не существовало", userId);
             throw new InternalServerException("Лайк от пользователя с id = " + userId + " не найден");
@@ -110,6 +129,22 @@ public class FilmService {
     // Вывод 10 наиболее популярных фильмов по количеству лайков
     public Collection<FilmDto> topFilmsByLikes(final int count) {
         return filmDbStorage.topFilmsByLikes(count)
+                .stream()
+                .map(FilmMapper::mapToFilmDto)
+                .toList();
+    }
+
+    public Collection<FilmDto> getCommon(Long userId, Long friendId) {
+        checkUserExists(userId);
+        checkUserExists(friendId);
+        return filmDbStorage.getCommon(userId, friendId)
+                .stream()
+                .map(FilmMapper::mapToFilmDto)
+                .toList();
+    }
+
+    public Collection<FilmDto> popularByGenre(int count, Long genreId, Integer year) {
+        return filmDbStorage.popularByGenre(count, genreId, year)
                 .stream()
                 .map(FilmMapper::mapToFilmDto)
                 .toList();
@@ -128,7 +163,7 @@ public class FilmService {
     }
 
     // Без этой проверки несуществующий рейтинг или жанр дойдёт до базы, нарушит внешний ключ и вернёт 500
-    private void checkMpaAndGenresExist(final Film film) {
+    private void checkMpaAndGenresAndDirectorExist(final Film film) {
         if (film.getMpa() != null && film.getMpa().getId() != null
                 && ratingStorage.getRatingById(film.getMpa().getId()).isEmpty()) {
             throw new NotFoundException("Рейтинга с id = " + film.getMpa().getId() + " не существует");
@@ -137,6 +172,13 @@ public class FilmService {
             for (GenreDto genre : film.getGenres()) {
                 if (genreStorage.getGenreById(genre.getId()).isEmpty()) {
                     throw new NotFoundException("Жанра с id = " + genre.getId() + " не существует");
+                }
+            }
+        }
+        if (film.getDirectors() != null && !film.getDirectors().isEmpty()) {
+            for (DirectorDto director : film.getDirectors()) {
+                if (directorStorage.getDirectorById(director.getId()).isEmpty()) {
+                    throw new NotFoundException("режиссера с id = " + director.getId() + " не существует");
                 }
             }
         }
@@ -152,5 +194,33 @@ public class FilmService {
         if (!duration.isPositive()) {
             throw new ValidationException("Продолжительность фильма должна быть положительным числом");
         }
+    }
+
+    public Collection<FilmDto> getFilmsByDirector(Long directorId, String sortBy) {
+        if (directorStorage.getDirectorById(directorId).isEmpty()) {
+            throw new NotFoundException("Режиссера с id = " + directorId + " не существует");
+        }
+        if (sortBy.equals("year")) sortBy = "f.release_date";
+        else if (sortBy.equals("likes")) sortBy = "l.likes DESC";
+        else throw new ConditionsNotMetException("Параметр sortBy должен быть \"year\" или \"likes\"");
+
+        return filmDbStorage.getByDirector(directorId, sortBy)
+                .stream()
+                .map(FilmMapper::mapToFilmDto)
+                .toList();
+    }
+
+    public Collection<FilmDto> searchByDirectorAndName(String query, List<String> by) {
+        if (query.isBlank())
+            return getFilms();
+
+        if (by.isEmpty() || (!by.contains("director") && !by.contains("title"))) {
+            throw new ConditionsNotMetException("Параметр \"By\" должен содержать хотя бы 1 из 2 параметров: director, title");
+        }
+
+        return filmDbStorage.searchByParams(query, by)
+                .stream()
+                .map(FilmMapper::mapToFilmDto)
+                .toList();
     }
 }

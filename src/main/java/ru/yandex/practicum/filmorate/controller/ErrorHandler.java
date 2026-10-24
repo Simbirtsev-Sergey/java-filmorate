@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import ru.yandex.practicum.filmorate.exception.*;
 import ru.yandex.practicum.filmorate.model.ErrorResponse;
@@ -20,6 +21,12 @@ public class ErrorHandler {
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleInternalError(final RuntimeException e) {
         return new ErrorResponse("Not found", e.getMessage());
+    }
+
+    @ExceptionHandler(DataAccessException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleSQLError(final DataAccessException e) {
+        return new ErrorResponse(e.getMessage(), "Root cause: " + e.getMostSpecificCause().getMessage());
     }
 
     @ExceptionHandler
