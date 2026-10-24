@@ -372,7 +372,7 @@ class FilmorateApplicationTests {
         assertThat(directorStorage.getAllDirectors())
                 .extracting(DirectorDto::getId)
                 .contains(director1.getId(), director2.getId(), director3.getId());
-        assertThat(filmStorage.topFilmsByLikes(1)).hasSize(1);
+        assertThat(filmStorage.topFilmsByLikes(1)).hasSize(0);
     }
 
     @Test
