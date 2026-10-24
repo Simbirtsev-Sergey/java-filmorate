@@ -16,7 +16,7 @@ VALUES (1, 'G'),
        (3, 'PG-13'),
        (4, 'R'),
        (5, 'NC-17');
-
+/*
 MERGE INTO Directors(director_id, name) KEY (director_id)
 VALUES (1, 'Кристофер Нолан'),
        (2, 'Квентин Тарантино'),
@@ -77,7 +77,7 @@ VALUES (1, 2, 1),
        (4, 5, 2),
        (3, 4, 2),
        (5, 1, 2);
-
+*/
 MERGE INTO Operations(operation_id, name) KEY(operation_id)
     VALUES (1, 'REMOVE'),
     (2, 'ADD'),
