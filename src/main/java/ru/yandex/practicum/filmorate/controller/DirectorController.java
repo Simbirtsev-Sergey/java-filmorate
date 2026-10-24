@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import jakarta.validation.constraints.Positive;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.dto.director.DirectorDto;
@@ -24,7 +23,7 @@ public class DirectorController {
     }
 
     @GetMapping("/{id}")
-    public DirectorDto getDirectorById(@PathVariable @Positive Long id) {
+    public DirectorDto getDirectorById(@PathVariable Long id) {
         return directorService.getDirectorById(id);
     }
 
@@ -39,7 +38,7 @@ public class DirectorController {
     }
 
     @DeleteMapping("/{id}")
-    public void deleteDirector(@PathVariable @Positive Long id) {
+    public void deleteDirector(@PathVariable Long id) {
         directorService.deleteDirector(id);
     }
 }

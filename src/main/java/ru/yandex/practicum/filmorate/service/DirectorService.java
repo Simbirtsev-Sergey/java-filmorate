@@ -29,6 +29,8 @@ public class DirectorService {
 
 
     public DirectorDto addDirector(String name) {
+        if (name == null || name.isBlank())
+            throw new ConditionsNotMetException("Вы не передали имя режиссера");
         return directorStorage.addDirector(name);
     }
 

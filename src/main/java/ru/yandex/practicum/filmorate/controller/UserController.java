@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Positive;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -46,7 +45,7 @@ public class UserController {
     }
 
     @PutMapping(uri)
-    public void addFriend(@Positive @PathVariable final Long id, @Positive @PathVariable final Long friendsId) {
+    public void addFriend(@PathVariable final Long id, @PathVariable final Long friendsId) {
         userService.addFriend(id, friendsId);
     }
 
@@ -56,28 +55,28 @@ public class UserController {
     }
 
     @DeleteMapping(uri)
-    public void deleteFriend(@Positive @PathVariable final Long id, @Positive @PathVariable final Long friendsId) {
+    public void deleteFriend(@PathVariable final Long id, @PathVariable final Long friendsId) {
         userService.deleteFriend(id, friendsId);
     }
 
     @GetMapping("/{id}/friends")
-    public Collection<User> usersFriends(@Positive @PathVariable final Long id) {
+    public Collection<User> usersFriends(@PathVariable final Long id) {
         return userService.usersFriends(id);
     }
 
     @GetMapping("/{id}/friends/common/{otherId}")
-    public Collection<User> mutualFriends(@PathVariable @Positive final Long id,
-                                          @PathVariable @Positive final Long otherId) {
+    public Collection<User> mutualFriends(@PathVariable final Long id,
+                                          @PathVariable final Long otherId) {
         return userService.mutualFriends(id, otherId);
     }
 
     @GetMapping("/{id}/recommendations")
-    public Collection<FilmDto> getRecommendations(@Positive @PathVariable final Long id) {
+    public Collection<FilmDto> getRecommendations(@PathVariable final Long id) {
         return userService.getRecommendations(id);
     }
 
     @GetMapping("{id}/feed")
-    public Collection<ActionDto> activityFeed(@PathVariable @Positive final Long id) {
+    public Collection<ActionDto> activityFeed(@PathVariable final Long id) {
         return userService.activityFeed(id);
     }
 }

@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Positive;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -41,7 +40,7 @@ public class FilmController {
     }
 
     @GetMapping("/{id}")
-    public FilmDto getFilmById(@Positive @PathVariable final Long id) {
+    public FilmDto getFilmById(@PathVariable final Long id) {
         return filmService.getFilmById(id);
     }
 
@@ -60,11 +59,6 @@ public class FilmController {
         filmService.deleteLike(id, userId);
     }
 
-//    @GetMapping("/popular")
-//    public Collection<FilmDto> mostPopularFilms(@Positive @RequestParam(defaultValue = "10") int count) {
-//        return filmService.topFilmsByLikes(count);
-//    }
-
     @GetMapping("/search")
     public Collection<FilmDto> searchByDirectorAndName(@RequestParam String query, @RequestParam List<String> by) {
         return filmService.searchByDirectorAndName(query, by);
@@ -76,12 +70,12 @@ public class FilmController {
     }
 
     @GetMapping("/director/{directorId}")
-    public Collection<FilmDto> getFilmsByDirector(@PathVariable @Positive Long directorId, @RequestParam String sortBy) {
+    public Collection<FilmDto> getFilmsByDirector(@PathVariable Long directorId, @RequestParam String sortBy) {
         return filmService.getFilmsByDirector(directorId, sortBy);
     }
 
     @GetMapping("/popular")
-    public Collection<FilmDto> getPopularByGenreYear(@Positive @RequestParam(defaultValue = "10") int count,
+    public Collection<FilmDto> getPopularByGenreYear(@RequestParam(defaultValue = "10") int count,
                                                      @RequestParam(required = false) Long genreId,
                                                      @RequestParam(required = false) Integer year) {
         return filmService.popularByGenre(count, genreId, year);

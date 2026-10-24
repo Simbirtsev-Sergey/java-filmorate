@@ -101,14 +101,14 @@ public class FilmService {
             throw new NotFoundException("Переданного фильма не существует");
         }
 
+        // Повторный лайк не ошибка: вторую строку в базу не пишем, но событие в ленту попадает каждый раз
         if (filmDbStorage.existsUserAndFilm(filmId, userId)) {
             log.debug("Лайк от пользователя с id = {} уже добавлен", userId);
-            throw new ExcessiveActionException("Лайк от пользователя с id = " + userId + " уже добавлен");
         } else {
-            log.debug("Лайк от пользователя с id = {} успешно добавлен", userId);
             filmDbStorage.insertLike(filmId, userId);
-            actionStorage.createAction(actionStorage.create(userId, 2L, 1L, filmId));
+            log.debug("Лайк от пользователя с id = {} успешно добавлен", userId);
         }
+        actionStorage.createAction(actionStorage.create(userId, 2L, 1L, filmId));
     }
 
     // Удаление лайка
@@ -197,6 +197,9 @@ public class FilmService {
     }
 
     public Collection<FilmDto> getFilmsByDirector(Long directorId, String sortBy) {
+        if (directorStorage.getDirectorById(directorId).isEmpty()) {
+            throw new NotFoundException("Режиссера с id = " + directorId + " не существует");
+        }
         if (sortBy.equals("year")) sortBy = "f.release_date";
         else if (sortBy.equals("likes")) sortBy = "l.likes DESC";
         else throw new ConditionsNotMetException("Параметр sortBy должен быть \"year\" или \"likes\"");

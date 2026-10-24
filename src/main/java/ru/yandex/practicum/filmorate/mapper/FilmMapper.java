@@ -5,6 +5,8 @@ import ru.yandex.practicum.filmorate.dto.film.NewFilmRequest;
 import ru.yandex.practicum.filmorate.dto.film.UpdateFilmRequest;
 import ru.yandex.practicum.filmorate.model.Film;
 
+import java.util.ArrayList;
+
 public final class FilmMapper {
     public static Film mapToFilm(NewFilmRequest request) {
         Film film = new Film();
@@ -53,9 +55,8 @@ public final class FilmMapper {
         if (request.hasGenres()) {
             film.setGenres(request.getGenres());
         }
-        if (request.hasDirectors()) {
-            film.setDirectors(request.getDirectors());
-        }
+        // Режиссёры заменяются целиком: если поле не передано, у фильма их не остаётся
+        film.setDirectors(request.hasDirectors() ? request.getDirectors() : new ArrayList<>());
         return film;
     }
 }
