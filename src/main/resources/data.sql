@@ -87,7 +87,9 @@ MERGE INTO Event_types(event_type_id, name) KEY(event_type_id)
     VALUES (1, 'LIKE'),
     (2, 'REVIEW'),
     (3, 'FRIEND');
-
+/*
 ALTER TABLE Users ALTER COLUMN user_id RESTART WITH (SELECT COALESCE(MAX(user_id), 0) + 1 FROM Users);
 ALTER TABLE Films ALTER COLUMN film_id RESTART WITH (SELECT COALESCE(MAX(film_id), 0) + 1 FROM Films);
 ALTER TABLE Directors ALTER COLUMN director_id RESTART WITH (SELECT COALESCE(MAX(director_id),0) + 1 FROM Directors);
+*/
+ */
