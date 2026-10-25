@@ -12,6 +12,7 @@ import java.util.Collection;
 @Slf4j
 public class DirectorController {
     private final DirectorService directorService;
+    private static final String urlId = "/{id}";
 
     public DirectorController(DirectorService directorService) {
         this.directorService = directorService;
@@ -22,7 +23,7 @@ public class DirectorController {
         return directorService.getAllDirectors();
     }
 
-    @GetMapping("/{id}")
+    @GetMapping(urlId)
     public DirectorDto getDirectorById(@PathVariable Long id) {
         return directorService.getDirectorById(id);
     }
@@ -37,7 +38,7 @@ public class DirectorController {
         return directorService.updateDirector(newDirector);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping(urlId)
     public void deleteDirector(@PathVariable Long id) {
         directorService.deleteDirector(id);
     }

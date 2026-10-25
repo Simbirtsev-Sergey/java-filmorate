@@ -52,7 +52,7 @@ public class ReviewService {
     public ReviewDto getReviewById(final Long id) {
         return reviewStorage.getReviewById(id)
                 .map(ReviewMapper::mapToReviewDto)
-                .orElseThrow(() -> new NotFoundException("Отзыва с id = " + id + " не существует"));
+                .orElseThrow(() -> new NotFoundException(String.format("Отзыва с id = {} не существует", id)));
     }
 
     public void deleteReviewById(final Long id) {

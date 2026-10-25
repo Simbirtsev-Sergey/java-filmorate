@@ -16,6 +16,7 @@ public class ReviewController {
     private final ReviewService reviewService;
     private static final String urlLike = "/{id}/like/{userId}";
     private static final String urlDislike = "/{id}/dislike/{userId}";
+    private static final String urlId = "/{id}";
 
     @Autowired
     public ReviewController(final ReviewService reviewService) {
@@ -27,12 +28,12 @@ public class ReviewController {
         return reviewService.create(newReviewRequest);
     }
 
-    @GetMapping("/{id}")
+    @GetMapping(urlId)
     public ReviewDto getReviewById(@PathVariable final Long id) {
         return reviewService.getReviewById(id);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping(urlId)
     public void deleteReviewById(@PathVariable final Long id) {
         reviewService.deleteReviewById(id);
     }
