@@ -88,7 +88,7 @@ public class UserTest {
 
         UserStorage userStorage = new InMemoryUserStorage();
 
-        UserService userService = new UserService(userStorage);
+        UserService userService = new UserService(userStorage, null, null);
 
         UserController controller = new UserController(userService);
 
@@ -108,7 +108,7 @@ public class UserTest {
 
         UserStorage userStorage = new InMemoryUserStorage();
 
-        UserService userService = new UserService(userStorage);
+        UserService userService = new UserService(userStorage, null, null);
 
         UserController controller = new UserController(userService);
 
@@ -135,7 +135,7 @@ public class UserTest {
 
         UserStorage userStorage = new InMemoryUserStorage();
 
-        UserService userService = new UserService(userStorage);
+        UserService userService = new UserService(userStorage, null, null);
 
         UserController controller = new UserController(userService);
 
@@ -155,7 +155,7 @@ public class UserTest {
     void getUsersReturnsNoCreatedUser() {
         UserStorage userStorage = new InMemoryUserStorage();
 
-        UserService userService = new UserService(userStorage);
+        UserService userService = new UserService(userStorage, null, null);
 
         UserController controller = new UserController(userService);
 
@@ -177,7 +177,7 @@ public class UserTest {
 
         UserStorage userStorage = new InMemoryUserStorage();
 
-        UserService userService = new UserService(userStorage);
+        UserService userService = new UserService(userStorage, null, null);
 
         UserController controller = new UserController(userService);
 
@@ -209,7 +209,7 @@ public class UserTest {
 
         UserStorage userStorage = new InMemoryUserStorage();
 
-        UserService userService = new UserService(userStorage);
+        UserService userService = new UserService(userStorage, null, null);
 
         UserController controller = new UserController(userService);
 
@@ -233,7 +233,7 @@ public class UserTest {
 
         UserStorage userStorage = new InMemoryUserStorage();
 
-        UserService userService = new UserService(userStorage);
+        UserService userService = new UserService(userStorage, null, null);
 
         UserController controller = new UserController(userService);
 
